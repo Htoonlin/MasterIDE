@@ -90,7 +90,9 @@ public class MainController implements Initializable {
                 dialog.close();
                 //this.loadHibernate();
             });
-            new Thread(task).start();
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
             return true;
         } else {
             AlertDialog.showWarning("Invalid project directory.");
@@ -186,8 +188,10 @@ public class MainController implements Initializable {
                         IDE.getPrefs().put(Constants.IDE.PREV_PROJECT_DIR, savePath);
                     }
                 });
-                new Thread(task).start();
-            } else if (this.loadProject()) {                
+                Thread thread = new Thread(task);
+                thread.setDaemon(true);
+                thread.start();
+            } else if (this.loadProject()) {
                 IDE.getPrefs().put(Constants.IDE.PREV_PROJECT_DIR, savePath);
             }
         } else {

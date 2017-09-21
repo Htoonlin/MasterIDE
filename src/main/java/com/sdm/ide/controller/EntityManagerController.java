@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import com.sdm.ide.component.AlertDialog;
+import com.sdm.ide.component.CodeEditor;
 import com.sdm.ide.component.ProgressDialog;
 import com.sdm.ide.component.TableHelper;
 import com.sdm.ide.helper.HibernateManager;
@@ -21,7 +22,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
+import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
@@ -29,6 +30,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class EntityManagerController implements Initializable {
 
@@ -43,9 +48,6 @@ public class EntityManagerController implements Initializable {
 
     @FXML
     private TableView<PropertyModel> propertyTable;
-
-    @FXML
-    private Button btnMapping;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -105,7 +107,9 @@ public class EntityManagerController implements Initializable {
                 dialog.close();
             });
 
-            new Thread(task).start();
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
         } else {
             AlertDialog.showWarning("It is not java file. <" + entity.getAbsolutePath() + ">.");
         }
@@ -131,6 +135,7 @@ public class EntityManagerController implements Initializable {
         this.showPropertyDetail(property);
     }
 
+    @FXML
     private void deleteProperty() {
         PropertyModel property = this.propertyTable.getSelectionModel().getSelectedItem();
         if (property != null) {
@@ -144,7 +149,6 @@ public class EntityManagerController implements Initializable {
         }
     }
 
-    @FXML
     public void deleteProperty(ActionEvent event) {
         this.deleteProperty();
     }
@@ -192,5 +196,15 @@ public class EntityManagerController implements Initializable {
             AlertDialog.showException(e);
         }
 
+    }
+
+    @FXML
+    private void showCode(ActionEvent event) {
+        try {
+            CodeEditor editor = new CodeEditor(currentEntity.getFile());
+            editor.showDialog();
+        } catch (IOException ex) {
+            AlertDialog.showException(ex);
+        }
     }
 }

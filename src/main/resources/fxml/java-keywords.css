@@ -1,0 +1,30 @@
+.lineno{
+    -fx-background-color: #F6F8FA;
+    -fx-fill: #222;
+}
+.keyword {
+    -fx-fill: blue;
+}
+.annotation{
+    -fx-fill: #009999;
+    -fx-font-weight: bold;
+}
+.semicolon, .bracket, .paren, .brace{    
+    -fx-font-weight: bold;
+}
+.string {
+    -fx-fill: #F92672;
+}
+.comment {
+    -fx-fill: #008000;
+}
+.paragraph-box:has-caret {
+    -fx-background-color: #F6F8FA;
+}
+/* Editor Background color */
+.virtual-flow{
+    -fx-background-color: white;    
+}
+.styled-text-area {
+    -fx-highlight-fill: #90A4B0;
+}

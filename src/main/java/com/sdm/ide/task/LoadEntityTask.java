@@ -35,7 +35,7 @@ public class LoadEntityTask extends Task<EntityModel> {
         super();
         this.javaFile = javaFile;
         updateMessage("Init entity.");
-        this.entity = new EntityModel();        
+        this.entity = new EntityModel(javaFile);
     }
 
     private void showMessage(String message, int milliSeconds) {
@@ -44,25 +44,6 @@ public class LoadEntityTask extends Task<EntityModel> {
             Thread.sleep(milliSeconds);
         } catch (InterruptedException ex) {
             updateMessage(message);
-        }
-    }
-
-    private void loadDefaultValues() {
-        this.entity.setName(javaFile.getName().replaceAll("\\.java", ""));
-
-        String[] pathSplit = ProjectManager.getFilePath(javaFile).split("/java/");
-        if (pathSplit.length == 2) {
-            String basePackage = pathSplit[1].replaceAll("/", ".").replaceAll("\\.java", "");
-            boolean isMapped = HibernateManager.getInstance().getEntities().contains(basePackage);
-            this.entity.setMappedWithDB(isMapped);
-            int end = basePackage.indexOf(".entity");
-            String moduleName = basePackage.substring(0, end);
-            String dbModule = basePackage.toLowerCase().replaceAll("com\\.sdm\\.", "").replaceAll("(\\.)*entity", "");
-            String tableName = "tbl_" + dbModule.replaceAll("\\.", "_");
-            this.entity.setModuleName(moduleName);
-            this.entity.setEntityName(basePackage);
-            this.entity.setTableName(tableName);
-            this.entity.addImport(moduleName + ".resource." + this.entity.getName().replaceAll("Entity", "Resource"));
         }
     }
 
@@ -93,7 +74,6 @@ public class LoadEntityTask extends Task<EntityModel> {
             List<String> codeLines = Files.readAllLines(this.javaFile.toPath());
             int i = 3;
             int max = codeLines.size() + 5;
-            this.loadDefaultValues();
             this.updateProgress(i, max);
             for (String code : codeLines) {
                 updateProgress(i++, max);

@@ -1,5 +1,8 @@
 package com.sdm.ide.model;
 
+import com.sdm.ide.helper.HibernateManager;
+import com.sdm.ide.helper.ProjectManager;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,6 +26,7 @@ public class EntityModel implements Serializable {
     private final BooleanProperty dynamicUpdate;
     private final BooleanProperty mappedWithDB;
 
+    private File file;
     private Set<String> imports;
     private Set<String> searchFields;
     private Set<PropertyModel> properties;
@@ -40,6 +44,24 @@ public class EntityModel implements Serializable {
         this.imports = this.initImports();
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
+    }
+
+    public EntityModel(File file) {
+        this();
+        this.file = file;
+        this.setName(file.getName().replaceAll("\\.java", ""));
+        String[] pathSplit = ProjectManager.getFilePath(file).split("/java/");
+        if (pathSplit.length == 2) {
+            String basePackage = pathSplit[1].replaceAll("/", ".").replaceAll("\\.java", "");
+            boolean isMapped = HibernateManager.getInstance().getEntities().contains(basePackage);
+            this.setMappedWithDB(isMapped);
+            int end = basePackage.indexOf(".entity");
+            this.setModuleName(basePackage.substring(0, end));
+            String dbModule = basePackage.toLowerCase().replaceAll("com\\.sdm\\.", "").replaceAll("(\\.)*entity", "");
+            this.setTableName("tbl_" + dbModule.replaceAll("\\.", "_"));
+            this.setEntityName(basePackage);
+            this.addImport(moduleName + ".resource." + this.getName().replaceAll("Entity", "Resource"));
+        }
     }
 
     private Set<String> initImports() {
@@ -75,6 +97,14 @@ public class EntityModel implements Serializable {
             }
         }
         return "";
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
     }
 
     public String getBaseName() {

@@ -8,8 +8,21 @@
     <packaging>jar</packaging>
 
     <name>MasterIDE</name>
+    
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.TomasMikula</groupId>
+            <artifactId>RichTextFX</artifactId>
+            <version>v0.7-M5</version>
+        </dependency>
+
         <!-- Zxing BarCode Library -->
         <dependency>
             <groupId>com.google.zxing</groupId>

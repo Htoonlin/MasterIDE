@@ -1,10 +1,8 @@
 package com.sdm;
 
-import java.util.prefs.Preferences;
-
-import com.sdm.ide.controller.MainController;
 import com.sdm.ide.component.AlertDialog;
-
+import com.sdm.ide.controller.MainController;
+import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -27,6 +25,7 @@ public class IDE extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
             MainController controller = loader.getController();
