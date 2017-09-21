@@ -1,0 +1,93 @@
+{
+    "char": {
+        "db": "CHAR",
+        "input": "combo"
+    },
+    "String": {
+        "db": "VARCHAR",
+        "input": "text",
+        "supported_validations": [
+            "Pattern",
+            "Size"
+        ]
+    },
+    "int": {
+        "db": "INTEGER",
+        "input": "number",
+        "supported_validations": [
+            "Max",
+            "Min"
+        ]
+    },
+    "long": {
+        "db": "BIGINT",
+        "input": "number",
+        "supported_validations": [
+            "Max",
+            "Min"
+        ]
+    },
+    "boolean": {
+        "db": "BIT",
+        "input": "checkbox",
+        "supported_validations": [
+            "AssertFalse",
+            "AssertTrue"
+        ]
+    },
+    "Date": {
+        "db": "DATETIME",
+        "input": "datetime",
+        "supported_validations": [
+            "Future",
+            "Past"
+        ]
+    },
+    "BigDecimal": {
+        "db": "NUMERIC",
+        "input": "number",
+        "supported_validations": [
+            "Digits",
+            "DecimalMax",
+            "DecimalMin"
+        ]
+    },
+    "byte": {
+        "db": "TINYINT",
+        "input": "number",
+        "supported_validations": [
+            "Max",
+            "Min"
+        ]
+    },
+    "short": {
+        "db": "SMALLINT",
+        "input": "number",
+        "supported_validations": [
+            "Max",
+            "Min"
+        ]
+    },
+    "float": {
+        "db": "REAL",
+        "input": "number",
+        "supported_validations": [
+            "Digits",
+            "DecimalMax",
+            "DecimalMin"
+        ]
+    },
+    "double": {
+        "db": "DOUBLE",
+        "input": "number",
+        "supported_validations": [
+            "Digits",
+            "DecimalMax",
+            "DecimalMin"
+        ]
+    },
+    "byte[]": {
+        "db": "VARBINARY",
+        "input": "file"
+    }
+}

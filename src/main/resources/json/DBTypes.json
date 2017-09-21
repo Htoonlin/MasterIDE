@@ -1,0 +1,19 @@
+{
+    "VARCHAR": "String",
+    "INTEGER": "int",
+    "BIT": "boolean",
+    "BIGINT": "long",
+    "REAL": "float",
+    "VARBINARY": "byte[]",
+    "DATE": "Date",
+    "TIME": "Date",
+    "TIMESTAMP": "Date",
+    "TINYINT": "byte",
+    "SMALLINT": "short",
+    "CHAR": "String",
+    "NUMERIC": "BigDecimal",
+    "DECIMAL": "BigDecimal",
+    "FLOAT": "double",
+    "DOUBLE": "double",
+    "BINARY": "byte[]"
+}

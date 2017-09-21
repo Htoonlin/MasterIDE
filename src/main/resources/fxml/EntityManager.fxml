@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<SplitPane fx:id="rootPane" minHeight="450.0" minWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sdm.ide.controller.EntityManagerController">
+    <items>
+        <AnchorPane minWidth="-Infinity" prefWidth="600.0">
+            <children>
+                <TableView fx:id="propertyTable" minWidth="300.0" onKeyPressed="#deleteKeyPressed" prefWidth="500.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
+                <HBox prefHeight="48.0" prefWidth="200.0" spacing="5.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#showDetail" prefHeight="32.0" prefWidth="120.0" text="Entity Info">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/detail.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Show Entity Info" />
+                            </tooltip>
+                        </Button>
+                        <Button layoutX="236.0" layoutY="19.0" mnemonicParsing="false" onAction="#addProperty" prefHeight="32.0" prefWidth="150.0" text="New Property">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/add_property.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="New property" />
+                            </tooltip>
+                        </Button>
+                        <Button layoutX="120.0" layoutY="18.0" mnemonicParsing="false" onAction="#deleteProperty" prefHeight="32.0" prefWidth="150.0" text="Delete Property">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true" scaleX="0.9" scaleY="0.9">
+                                    <image>
+                                        <Image url="@../image/remove.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Delete Property" />
+                            </tooltip>
+                        </Button>
+                        <Button layoutX="120.0" layoutY="19.0" mnemonicParsing="false" onAction="#writeEntity" prefHeight="32.0" prefWidth="150.0" text="Save Entity">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/save.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Save Entity" />
+                            </tooltip>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>

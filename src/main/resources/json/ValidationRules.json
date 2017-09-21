@@ -1,0 +1,76 @@
+{
+    "AssertFalse": {
+        "params": [
+            "message"
+        ]
+    },
+    "AssertTrue": {
+        "params": [
+            "message"
+        ]
+    },
+    "Digits": {
+        "params": [
+            "integer",
+            "fraction",
+            "message"
+        ]
+    },
+    "DecimalMax": {
+        "params": [
+            "value",
+            "message"
+        ]
+    },
+    "DecimalMin": {
+        "params": [
+            "value",
+            "message"
+        ]
+    },
+    "Max": {
+        "params": [
+            "value",
+            "message"
+        ]
+    },
+    "Min": {
+        "params": [
+            "value",
+            "message"
+        ]
+    },
+    "Future": {
+        "params": [
+            "message"
+        ]
+    },
+    "Past": {
+        "params": [
+            "message"
+        ]
+    },
+    "NotNull": {
+        "params": [
+            "message"
+        ]
+    },
+    "Null": {
+        "params": [
+            "message"
+        ]
+    },
+    "Size": {
+        "params": [
+            "min",
+            "max",
+            "message"
+        ]
+    },
+    "Pattern": {
+        "params": [
+            "regexp",
+            "message"
+        ]
+    }
+}

@@ -1,0 +1,5 @@
+.tool-bar{
+    -fx-border-color: #646464;
+    -fx-border-width: 0 0 1 0;
+    -fx-effect:dropshadow(three-pass-box, #A9A9A9, 3.0, 0.0, 0.0, 1.0); 
+}
