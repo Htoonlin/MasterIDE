@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sdm.ide.task;
+package com.sdm.ide.helper;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.concurrent.Task;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
@@ -17,7 +16,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  *
  * @author htoonlin
  */
-public class SyntaxHighlightingTask extends Task<StyleSpans<Collection<String>>> {
+public class SyntaxHighlighting {
 
     private static final String[] KEYWORDS = new String[]{
         "abstract", "assert", "boolean", "break", "byte",
@@ -52,14 +51,7 @@ public class SyntaxHighlightingTask extends Task<StyleSpans<Collection<String>>>
             + "|(?<ANNOTATION>" + ANNOTATION_PATTERN + ")"
     );
 
-    private String source;
-
-    public SyntaxHighlightingTask(String source) {
-        this.source = source;
-    }
-
-    @Override
-    protected StyleSpans<Collection<String>> call() throws Exception {
+    public static StyleSpans<Collection<String>> highlightNow(String source) {
         Matcher matcher = PATTERN.matcher(source);
         int lastKwEnd = 0;
         StyleSpansBuilder<Collection<String>> spansBuilder

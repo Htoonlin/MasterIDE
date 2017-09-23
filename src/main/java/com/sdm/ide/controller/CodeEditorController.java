@@ -7,16 +7,14 @@ package com.sdm.ide.controller;
 
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.ProjectManager;
-import com.sdm.ide.task.SyntaxHighlightingTask;
+import com.sdm.ide.helper.SyntaxHighlighting;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,7 +26,6 @@ import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.model.StyleSpans;
 
 /**
  * FXML Controller class
@@ -62,30 +59,14 @@ public class CodeEditorController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         codeArea = new CodeArea();
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .supplyTask(this::computeHighlightingAsync)
-                .awaitLatest(codeArea.richChanges())
-                .filterMap(t -> {
-                    if (t.isSuccess()) {
-                        return Optional.of(t.get());
-                    } else {
-                        AlertDialog.showException(t.getFailure());
-                        return Optional.empty();
-                    }
-                })
-                .subscribe((style) -> codeArea.setStyleSpans(0, style));
+                .subscribe(change -> {
+                    codeArea.setStyleSpans(0, SyntaxHighlighting.highlightNow(codeArea.getText()));
+                });
 
         this.editorPane.getChildren().add(new VirtualizedScrollPane<>(codeArea));
-    }
-
-    private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
-        String text = codeArea.getText();
-        SyntaxHighlightingTask task = new SyntaxHighlightingTask(text);
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
-        return task;
     }
 
     @FXML
