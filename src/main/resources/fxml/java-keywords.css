@@ -7,7 +7,6 @@
 }
 .annotation{
     -fx-fill: #009999;
-    -fx-font-weight: bold;
 }
 .semicolon, .bracket, .paren, .brace{    
     -fx-font-weight: bold;
