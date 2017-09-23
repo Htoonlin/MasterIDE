@@ -1,21 +1,18 @@
 package com.sdm.ide.controller;
 
+import com.sdm.ide.component.AlertDialog;
+import com.sdm.ide.component.ProgressDialog;
+import com.sdm.ide.component.TableHelper;
+import com.sdm.ide.helper.HibernateManager;
+import com.sdm.ide.helper.TemplateManager;
+import com.sdm.ide.model.EntityModel;
+import com.sdm.ide.model.PropertyModel;
+import com.sdm.ide.task.LoadEntityTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-
-import com.sdm.ide.component.AlertDialog;
-import com.sdm.ide.component.CodeEditor;
-import com.sdm.ide.component.ProgressDialog;
-import com.sdm.ide.component.TableHelper;
-import com.sdm.ide.helper.HibernateManager;
-import com.sdm.ide.task.LoadEntityTask;
-import com.sdm.ide.helper.TemplateManager;
-import com.sdm.ide.model.EntityModel;
-import com.sdm.ide.model.PropertyModel;
-
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,7 +28,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -201,8 +197,19 @@ public class EntityManagerController implements Initializable {
     @FXML
     private void showCode(ActionEvent event) {
         try {
-            CodeEditor editor = new CodeEditor(currentEntity.getFile());
-            editor.showDialog();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CodeEditor.fxml"));
+            AnchorPane root = (AnchorPane) loader.load();
+            CodeEditorController controller = loader.getController();
+            controller.setFile(currentEntity.getFile());
+
+            Scene dialogScene = new Scene(root, 720, 500);
+            dialogScene.getStylesheets().add(getClass().getResource("/fxml/java-keywords.css").toExternalForm());
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Code Editor");
+            dialogStage.initStyle(StageStyle.DECORATED);
+            dialogStage.setResizable(true);
+            dialogStage.setScene(dialogScene);
+            dialogStage.show();
         } catch (IOException ex) {
             AlertDialog.showException(ex);
         }

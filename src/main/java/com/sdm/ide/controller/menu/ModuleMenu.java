@@ -10,5 +10,5 @@ package com.sdm.ide.controller.menu;
  * @author htoonlin
  */
 public class ModuleMenu {
-    
+
 }

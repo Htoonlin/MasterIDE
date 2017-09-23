@@ -2,13 +2,11 @@ package com.sdm.core.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Created by Converter => saturngod on 23/1/15. Zawgyi Detector => Technomation
- * Studio
+ * Created by Converter => saturngod on 23/1/15. Zawgyi Detector => Technomation Studio
  */
 public class MyanmarFontManager {
 

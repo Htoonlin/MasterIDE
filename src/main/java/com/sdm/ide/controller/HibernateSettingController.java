@@ -68,7 +68,7 @@ public class HibernateSettingController implements Initializable {
                         ProjectTreeModel entityModel = entityTree.getValue();
                         if (entityModel.getType().equals(ProjectTreeModel.Type.ENTITY)) {
                             String filePath = ProjectManager.getFilePath(entityModel.getFile());
-                            String entityClass = ProjectManager.getEntityClass(filePath);
+                            String entityClass = ProjectManager.getClassNameWithPackage(filePath);
                             module.addEntityClass(entityClass);
                         }
                     }

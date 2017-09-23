@@ -2,6 +2,7 @@ package com.sdm;
 
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.controller.MainController;
+import java.io.IOException;
 import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -12,7 +13,7 @@ import javafx.stage.Stage;
 
 public class IDE extends Application {
 
-    private static Preferences prefs = Preferences.userNodeForPackage(IDE.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(IDE.class);
 
     public static Preferences getPrefs() {
         return prefs;
@@ -37,7 +38,7 @@ public class IDE extends Application {
             primaryStage.setScene(scene);
             primaryStage.setTitle("MasterIDE");
             primaryStage.show();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             AlertDialog.showException(ex);
             Platform.exit();
         }

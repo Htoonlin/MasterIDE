@@ -3,13 +3,11 @@ package com.sdm.ide.task;
 import com.sdm.Constants;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
-import java.io.File;
-
 import com.sdm.ide.model.ProjectTreeModel;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
 import javafx.concurrent.Task;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
@@ -117,7 +115,7 @@ public class LoadProjectTask extends Task<TreeItem<ProjectTreeModel>> {
         File log4jFile = new File(this.resourceDirectory.getPath() + File.separator + "log4j.properties");
         TreeItem<ProjectTreeModel> log4jTree = this.loadSetting(log4jFile, ProjectTreeModel.Type.LOG4J_SETTING, "Logging");
         moduleTree.getChildren().add(log4jTree);
-        
+
         File settingFile = new File(this.resourceDirectory.getPath() + File.separator + "setting.properties");
         TreeItem<ProjectTreeModel> settingTree = this.loadSetting(settingFile, ProjectTreeModel.Type.SYSTEM_SETTING, "System");
         moduleTree.getChildren().add(settingTree);

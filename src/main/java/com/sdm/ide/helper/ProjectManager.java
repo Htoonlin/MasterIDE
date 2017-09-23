@@ -31,7 +31,7 @@ public class ProjectManager {
         return file.getPath().replace(File.separatorChar, '/');
     }
 
-    public static String getEntityClass(String filePath) {
+    public static String getClassNameWithPackage(String filePath) {
         return filePath.replaceAll(".*/java/", "").replaceAll("\\.java", "").replaceAll("/", ".");
     }
 
