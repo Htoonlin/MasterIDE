@@ -13,7 +13,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class EntityModel implements Serializable {
+public final class EntityModel implements Serializable {
 
     private static final long serialVersionUID = -7804109111579775365L;
 
@@ -60,7 +60,8 @@ public class EntityModel implements Serializable {
             String dbModule = basePackage.toLowerCase().replaceAll("com\\.sdm\\.", "").replaceAll("(\\.)*entity", "");
             this.setTableName("tbl_" + dbModule.replaceAll("\\.", "_"));
             this.setEntityName(basePackage);
-            this.addImport(moduleName + ".resource." + this.getName().replaceAll("Entity", "Resource"));
+            String resourceImport = this.getModuleName() + ".resource." + this.getName().replaceAll("Entity", "Resource");
+            this.addImport(resourceImport);
         }
     }
 
@@ -93,7 +94,7 @@ public class EntityModel implements Serializable {
                 case "boolean":
                     return "Boolean";
                 default:
-                    return this.primaryProperty.getType().toString();
+                    return this.primaryProperty.getType();
             }
         }
         return "";

@@ -26,7 +26,7 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
          <children>
-            <Button mnemonicParsing="false" onAction="#saveSystemSetting" prefHeight="32.0" text="Save System Setting">
+            <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#saveSystemSetting" prefHeight="48.0" prefWidth="50.0" text="Save System Setting">
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -35,11 +35,8 @@
                   </ImageView>
                </graphic>
                <tooltip>
-                  <Tooltip text="Save Database Info" />
+                  <Tooltip text="Save System Setting" />
                </tooltip>
-               <padding>
-                  <Insets left="20.0" right="20.0" />
-               </padding>
             </Button>
          </children>
       </HBox>

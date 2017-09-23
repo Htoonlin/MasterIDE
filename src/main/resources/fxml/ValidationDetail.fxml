@@ -22,7 +22,7 @@
         </VBox>
         <BorderPane prefHeight="48.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <right>
-                <Button mnemonicParsing="false" onAction="#doneClick" text="Done" BorderPane.alignment="CENTER">
+                <Button defaultButton="true" mnemonicParsing="false" onAction="#doneClick" prefHeight="32.0" prefWidth="90.0" text="Done" BorderPane.alignment="CENTER">
                     <graphic>
                         <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -36,7 +36,7 @@
                 </Button>
             </right>
             <left>
-                <Button mnemonicParsing="false" onAction="#cancelClick" text="Cancel" BorderPane.alignment="CENTER">
+                <Button cancelButton="true" mnemonicParsing="false" onAction="#cancelClick" prefHeight="32.0" prefWidth="90.0" text="Cancel" BorderPane.alignment="CENTER">
                     <graphic>
                         <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                             <image>

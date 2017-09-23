@@ -1,7 +1,5 @@
 package com.sdm.ide.task;
 
-import com.sdm.ide.helper.HibernateManager;
-import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.helper.ValidationManager;
 import java.io.File;
