@@ -1,5 +1,14 @@
 package com.sdm.ide.controller;
 
+import com.sdm.Constants;
+import com.sdm.IDE;
+import com.sdm.ide.component.AlertDialog;
+import com.sdm.ide.component.ProgressDialog;
+import com.sdm.ide.helper.ProjectManager;
+import com.sdm.ide.model.ProjectTreeModel;
+import com.sdm.ide.model.ProjectTreeModel.Type;
+import com.sdm.ide.task.LoadProjectTask;
+import com.sdm.ide.task.NewProjectTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -7,17 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
-
-import com.sdm.Constants;
-import com.sdm.IDE;
-import com.sdm.ide.component.AlertDialog;
-import com.sdm.ide.component.ProgressDialog;
-import com.sdm.ide.task.LoadProjectTask;
-import com.sdm.ide.helper.ProjectManager;
-import com.sdm.ide.model.ProjectTreeModel;
-import com.sdm.ide.model.ProjectTreeModel.Type;
-import com.sdm.ide.task.NewProjectTask;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -184,7 +182,18 @@ public class MainController implements Initializable {
                 dialog.start(task);
                 task.setOnSucceeded((result) -> {
                     dialog.close();
-                    if (task.getValue() && this.loadProject()) {
+                    File downloadFile = task.getValue();
+                    //Remove downloadFile 
+                    Optional<ButtonType> respButton = AlertDialog.showQuestion("Do you want to remove downloaded zip file?");
+                    if (respButton.isPresent() && respButton.get().equals(ButtonType.YES)) {
+                        try {
+                            Files.delete(downloadFile.toPath());
+                        } catch (IOException ex) {
+                            AlertDialog.showException(ex);
+                        }
+                    }
+
+                    if (this.loadProject()) {
                         IDE.getPrefs().put(Constants.IDE.PREV_PROJECT_DIR, savePath);
                     }
                 });
