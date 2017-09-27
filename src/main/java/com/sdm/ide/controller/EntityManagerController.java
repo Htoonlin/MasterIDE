@@ -70,7 +70,7 @@ public class EntityManagerController implements Initializable {
         /* Load Property Detail */
         try {
             PropertyDetailController controller = this.loadDetail("/fxml/PropertyDetail.fxml");
-            controller.setProperty(property);
+            controller.setProperty(this.currentEntity, property);
         } catch (IOException e) {
             AlertDialog.showException(e);
         }
@@ -138,6 +138,9 @@ public class EntityManagerController implements Initializable {
             Optional<ButtonType> confirm = AlertDialog
                     .showQuestion("Are you sure to remove " + property.getName() + "?");
             if (confirm.get() == ButtonType.YES) {
+                if (property.isPrimary()) {
+                    this.currentEntity.setPrimaryProperty(null);
+                }
                 this.currentEntity.getProperties().remove(property);
                 this.propertyTable.getItems().remove(property);
                 this.propertyTable.refresh();
@@ -158,6 +161,11 @@ public class EntityManagerController implements Initializable {
 
     @FXML
     public void writeEntity(ActionEvent event) {
+        if (this.currentEntity.getPrimaryProperty() == null) {
+            AlertDialog.showWarning("Sorry! We can't generate entity without primary property.");
+            return;
+        }
+
         TemplateManager manager = new TemplateManager();
         try {
             manager.writeEntity(this.currentEntity, this.moduleDir);

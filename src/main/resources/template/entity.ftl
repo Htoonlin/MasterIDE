@@ -19,9 +19,6 @@ import ${import};
 @Table(name = "${entity.tableName}")
 public class ${entity.name} extends DefaultEntity implements Serializable {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = ${serializeId};
 
     public ${entity.name}() {

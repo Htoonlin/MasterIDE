@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
+import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
 import com.sdm.ide.model.ValidateModel;
 
@@ -39,11 +40,22 @@ import javafx.util.converter.NumberStringConverter;
 
 public class PropertyDetailController implements Initializable {
 
-    public void setProperty(PropertyModel property) {
+    private EntityModel currentEntity;
+
+    private PropertyModel currentProperty;
+
+    public void setProperty(EntityModel entity, PropertyModel property) {
         if (property == null) {
             AlertDialog.showWarning("Invalid property.");
             return;
         }
+
+        if (entity == null) {
+            AlertDialog.showError("There is no entity for " + property.getName());
+            return;
+        }
+
+        this.currentEntity = entity;
 
         this.currentProperty = property;
 
@@ -77,8 +89,6 @@ public class PropertyDetailController implements Initializable {
             AlertDialog.showException(ex);
         }
     }
-
-    private PropertyModel currentProperty;
 
     @FXML
     private AnchorPane rootPane;
@@ -245,9 +255,24 @@ public class PropertyDetailController implements Initializable {
         this.showValidation(null, false);
     }
 
-    @FXML
     public void showDetailInputType(ActionEvent event) {
         AlertDialog.showWarning("Under constructions!");
     }
 
+    @FXML
+    private void changePrimary(ActionEvent event) {
+        if (!chkColumnPrimary.isSelected()) {
+            this.currentEntity.setPrimaryProperty(null);
+            return;
+        }
+
+        Optional<ButtonType> result = AlertDialog.showQuestion("It will remove other primary field. Do you want to continue?");
+        if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+            PropertyModel previousModel = this.currentEntity.getPrimaryProperty();
+            if (previousModel != null) {
+                previousModel.setPrimary(false);
+            }
+            this.currentEntity.setPrimaryProperty(this.currentProperty);
+        }
+    }
 }

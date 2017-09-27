@@ -81,7 +81,6 @@ public class LoadProjectTask extends Task<TreeItem<ProjectTreeModel>> {
                 TreeItem<ProjectTreeModel> entityTree = new TreeItem<>(entityModel,
                         new ImageView(entityModel.getImage()));
                 moduleTree.getChildren().add(entityTree);
-
             }
         }
         return moduleTree;

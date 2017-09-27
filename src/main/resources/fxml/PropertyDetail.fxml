@@ -55,7 +55,7 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
-                                <CheckBox fx:id="chkColumnPrimary" mnemonicParsing="false" text="Primary">
+                                <CheckBox fx:id="chkColumnPrimary" mnemonicParsing="false" onAction="#changePrimary" text="Primary">
                                     <padding>
                                         <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                                     </padding>
