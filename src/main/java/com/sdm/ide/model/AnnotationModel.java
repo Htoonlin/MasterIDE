@@ -4,23 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.commons.lang.StringEscapeUtils;
 
-public class ValidateModel {
+public class AnnotationModel {
 
     private StringProperty name;
     private Map<String, String> values;
 
-    public ValidateModel() {
+    public AnnotationModel() {
         this.name = new SimpleStringProperty();
         this.values = new HashMap<>();
     }
 
-    public ValidateModel(String name) {
+    public AnnotationModel(String name) {
         this();
         this.setName(name);
     }
@@ -31,22 +29,27 @@ public class ValidateModel {
     }
 
     public String getAnnotation() {
-        String annotation = "@" + this.getName();
-        List<String> data = new ArrayList<>();
-        for (String key : this.values.keySet()) {
-            String value = this.values.get(key);
-            if (!value.matches("[0-9]+")) {
-                value = "\"" + StringEscapeUtils.escapeJava(value) + "\"";
+        try {
+            String annotation = "@" + this.getName();
+            if (this.values != null) {
+                List<String> data = new ArrayList<>();
+                for (String key : this.values.keySet()) {
+                    String value = this.values.get(key);
+                    if (!value.matches("[0-9]+|true|false")) {
+                        value = "\"" + StringEscapeUtils.escapeJava(value) + "\"";
+                    }
+
+                    data.add(key + "=" + value);
+                }
+
+                if (data.size() > 0) {
+                    annotation += "(" + String.join(", ", data) + ")";
+                }
             }
-
-            data.add(key + "=" + value);
+            return annotation;
+        } catch (Exception ex) {
+            return "";
         }
-
-        if (data.size() > 0) {
-            annotation += "(" + String.join(", ", data) + ")";
-        }
-
-        return annotation;
     }
 
     public Map<String, String> getValues() {
@@ -92,12 +95,12 @@ public class ValidateModel {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ValidateModel other = (ValidateModel) obj;
+        AnnotationModel other = (AnnotationModel) obj;
         if (name == null) {
             if (other.name != null) {
                 return false;
             }
-        } else if (!name.equals(other.name)) {
+        } else if (!name.get().equals(other.name.get())) {
             return false;
         }
         return true;

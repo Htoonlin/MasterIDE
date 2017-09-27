@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.component.Callback;
 import com.sdm.ide.helper.ValidationManager;
-import com.sdm.ide.model.ValidateModel;
+import com.sdm.ide.model.AnnotationModel;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,9 +36,9 @@ public class ValidationDetailController implements Initializable {
     @FXML
     private ComboBox<String> cboRules;
 
-    private ValidateModel model;
+    private AnnotationModel model;
 
-    public void setModel(ValidateModel model) {
+    public void setModel(AnnotationModel model) {
         if (model == null) {
             return;
         }
@@ -47,15 +47,15 @@ public class ValidationDetailController implements Initializable {
         this.cboRules.getSelectionModel().select(model.getName());
     }
 
-    private Callback<ValidateModel> doneHandler;
+    private Callback<AnnotationModel> doneHandler;
 
-    private Callback<ValidateModel> cancelHandler;
+    private Callback<AnnotationModel> cancelHandler;
 
-    public void onDone(Callback<ValidateModel> handler) {
+    public void onDone(Callback<AnnotationModel> handler) {
         this.doneHandler = handler;
     }
 
-    public void onCancel(Callback<ValidateModel> handler) {
+    public void onCancel(Callback<AnnotationModel> handler) {
         this.cancelHandler = handler;
     }
 
@@ -77,7 +77,7 @@ public class ValidationDetailController implements Initializable {
     void doneClick(ActionEvent event) {
         if (this.doneHandler != null) {
             if (this.model == null) {
-                this.model = new ValidateModel();
+                this.model = new AnnotationModel();
             }
 
             this.model.setName(cboRules.getSelectionModel().getSelectedItem());

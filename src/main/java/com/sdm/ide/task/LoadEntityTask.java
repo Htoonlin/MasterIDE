@@ -2,6 +2,9 @@ package com.sdm.ide.task;
 
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.helper.ValidationManager;
+import com.sdm.ide.model.AnnotationModel;
+import com.sdm.ide.model.EntityModel;
+import com.sdm.ide.model.PropertyModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,14 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONObject;
-
-import com.sdm.ide.model.EntityModel;
-import com.sdm.ide.model.PropertyModel;
-import com.sdm.ide.model.ValidateModel;
-
 import javafx.concurrent.Task;
+import org.json.JSONObject;
 
 public class LoadEntityTask extends Task<EntityModel> {
 
@@ -143,6 +140,19 @@ public class LoadEntityTask extends Task<EntityModel> {
         }
     }
 
+    private AnnotationModel convertAnnotation(String code) {
+        if (!code.startsWith("@")) {
+            return null;
+        }
+        AnnotationModel annotation = new AnnotationModel(code.substring(1));
+        if (code.contains("(")) {
+            int bracketIndex = code.indexOf("(");
+            annotation.setName(code.substring(1, bracketIndex));
+            annotation.setValues(this.valuesOfAnnotaion(code.substring(bracketIndex, code.length())));
+        }
+        return annotation;
+    }
+
     private void classAnalysis(String code) {
         for (String annotation : this.annotationList) {
             annotation = annotation.trim();
@@ -167,6 +177,11 @@ public class LoadEntityTask extends Task<EntityModel> {
                 Map<String, String> values = this.valuesOfAnnotaion(annotation.substring(start, annotation.length()));
                 if (values.containsKey("name")) {
                     this.entity.setTableName(values.get("name"));
+                }
+            } else {
+                AnnotationModel annotationModel = this.convertAnnotation(annotation);
+                if (annotationModel != null) {
+                    this.entity.addAnnotation(annotationModel);
                 }
             }
         }
@@ -234,6 +249,7 @@ public class LoadEntityTask extends Task<EntityModel> {
 
     private void propertyAnnotataion(PropertyModel property, String code) {
         for (String annotation : this.annotationList) {
+            annotation = annotation.trim();
             try {
                 if (annotation.startsWith("@Formula") && code.matches(".*search;")) {
                     this.searchColumns(annotation);
@@ -250,19 +266,21 @@ public class LoadEntityTask extends Task<EntityModel> {
                 } else if (annotation.startsWith("@Column")) {
                     this.columnAnalysis(property, annotation);
                 } else if (ValidationManager.getInstance().checkConstraint(annotation)) {
-                    this.validationAnalysis(property, annotation);
+                    AnnotationModel annotationModel = this.convertAnnotation(annotation);
+                    if (annotationModel != null) {
+                        property.addValidation(annotationModel);
+                    }
+                } else {
+                    AnnotationModel annotationModel = this.convertAnnotation(annotation);
+                    if (annotationModel != null) {
+                        property.addAnnotations(annotationModel);
+                    }
+
                 }
             } catch (Exception ex) {
                 showMessage(ex.getLocalizedMessage(), 100);
             }
         }
-    }
-
-    private void validationAnalysis(PropertyModel property, String annotation) {
-        int bracketStart = annotation.indexOf("(");
-        ValidateModel validation = new ValidateModel(annotation.substring(1, bracketStart));
-        validation.setValues(this.valuesOfAnnotaion(annotation.substring(bracketStart, annotation.length())));
-        property.addValidation(validation);
     }
 
     private void uiAnalysis(PropertyModel property, String annotation) {
@@ -292,10 +310,6 @@ public class LoadEntityTask extends Task<EntityModel> {
         boolean required = !Boolean.parseBoolean(values.getOrDefault("nullable", "true"));
         if (required) {
             property.setRequired(true);
-            if (!property.isPrimary()) {
-                // Set NotNull Validate
-                property.addValidation(new ValidateModel("NotNull"));
-            }
         }
 
         if (values.containsKey("columnDefinition")) {

@@ -1,18 +1,15 @@
 package com.sdm.ide.helper;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONObject;
-
 import com.sdm.Constants;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 
 public class ValidationManager {
 
@@ -47,8 +44,12 @@ public class ValidationManager {
     }
 
     public boolean checkConstraint(String constraint) {
+        if (!constraint.startsWith("@")) {
+            return false;
+        }
+
         for (String rule : rulesMapping.keySet()) {
-            if (constraint.contains(rule)) {
+            if (constraint.contains("@" + rule)) {
                 return true;
             }
         }

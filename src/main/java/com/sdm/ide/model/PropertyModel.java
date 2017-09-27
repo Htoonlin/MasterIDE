@@ -1,11 +1,9 @@
 package com.sdm.ide.model;
 
+import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.sdm.ide.component.annotation.FXColumn;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -65,7 +63,9 @@ public class PropertyModel implements Serializable {
     @FXColumn(visible = false)
     private BooleanProperty readOnly;
 
-    private Set<ValidateModel> validations;
+    private Set<AnnotationModel> validations;
+
+    private Set<AnnotationModel> annotations;
 
     public PropertyModel(int index) {
         this();
@@ -91,18 +91,36 @@ public class PropertyModel implements Serializable {
         this.searchable = new SimpleBooleanProperty(false);
         this.jsonIgnore = new SimpleBooleanProperty(false);
         this.validations = new HashSet<>();
+        this.annotations = new HashSet<>();
     }
 
-    public Set<ValidateModel> getValidations() {
+    public Set<AnnotationModel> getValidations() {
         return validations;
     }
 
-    public void setValidations(Set<ValidateModel> validations) {
+    public void setValidations(Set<AnnotationModel> validations) {
         this.validations = validations;
     }
 
-    public void addValidation(ValidateModel validate) {
-        this.validations.add(validate);
+    public void addValidation(AnnotationModel validate) {
+        if (!this.validations.contains(validate)) {
+            this.validations.add(validate);
+        }
+    }
+
+    public Set<AnnotationModel> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(Set<AnnotationModel> annotations) {
+        this.annotations = annotations;
+    }
+
+    public void addAnnotations(AnnotationModel annotation) {
+        if (!this.validations.contains(annotation)
+                && !this.annotations.contains(annotation)) {
+            this.annotations.add(annotation);
+        }
     }
 
     public StringProperty nameProperty() {
@@ -305,7 +323,7 @@ public class PropertyModel implements Serializable {
             if (other.name != null) {
                 return false;
             }
-        } else if (!name.equals(other.name)) {
+        } else if (!name.get().equals(other.name.get())) {
             return false;
         }
         return true;

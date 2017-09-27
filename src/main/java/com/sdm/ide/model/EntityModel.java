@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -31,6 +30,7 @@ public final class EntityModel implements Serializable {
     private Set<String> searchFields;
     private Set<PropertyModel> properties;
     private PropertyModel primaryProperty;
+    private Set<AnnotationModel> annotations;
 
     public EntityModel() {
         this.name = new SimpleStringProperty("");
@@ -44,6 +44,7 @@ public final class EntityModel implements Serializable {
         this.imports = this.initImports();
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
+        this.annotations = new HashSet<>();
     }
 
     public EntityModel(File file) {
@@ -146,6 +147,18 @@ public final class EntityModel implements Serializable {
         }
 
         return null;
+    }
+
+    public Set<AnnotationModel> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(Set<AnnotationModel> annotations) {
+        this.annotations = annotations;
+    }
+
+    public void addAnnotation(AnnotationModel annotation) {
+        this.annotations.add(annotation);
     }
 
     public Set<String> getImports() {

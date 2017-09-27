@@ -12,7 +12,7 @@ import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
-import com.sdm.ide.model.ValidateModel;
+import com.sdm.ide.model.AnnotationModel;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -80,7 +80,7 @@ public class PropertyDetailController implements Initializable {
             this.chkReadOnly.selectedProperty().bindBidirectional(property.readOnlyProperty());
 
             if (property.getValidations() != null) {
-                ObservableList<ValidateModel> validations = FXCollections
+                ObservableList<AnnotationModel> validations = FXCollections
                         .observableArrayList(property.getValidations());
                 this.lstValidations.setItems(validations);
             }
@@ -142,9 +142,9 @@ public class PropertyDetailController implements Initializable {
     private Label lblPropertyName;
 
     @FXML
-    private ListView<ValidateModel> lstValidations;
+    private ListView<AnnotationModel> lstValidations;
 
-    private void showValidation(ValidateModel model, final boolean isUpdate) {
+    private void showValidation(AnnotationModel model, final boolean isUpdate) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ValidationDetail.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
@@ -215,7 +215,7 @@ public class PropertyDetailController implements Initializable {
     @FXML
     void deleteValidationRule(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-            final ValidateModel model = lstValidations.getSelectionModel().getSelectedItem();
+            final AnnotationModel model = lstValidations.getSelectionModel().getSelectedItem();
             if (model != null) {
                 Optional<ButtonType> result = AlertDialog
                         .showQuestion("Are you sure to remove " + model.getName() + "?");
@@ -232,7 +232,7 @@ public class PropertyDetailController implements Initializable {
 
     @FXML
     void selectedItem(MouseEvent event) {
-        ValidateModel model = lstValidations.getSelectionModel().getSelectedItem();
+        AnnotationModel model = lstValidations.getSelectionModel().getSelectedItem();
         if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && model != null) {
             this.showValidation(model, true);
         }

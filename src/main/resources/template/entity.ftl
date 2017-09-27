@@ -9,6 +9,9 @@ import ${import};
  * @author ${author}
  * 
  */
+<#list entity.annotations as annotation>
+${annotation.annotation}
+</#list>
 <#if entity.auditable>
 @Audited
 </#if>
@@ -49,6 +52,9 @@ public class ${entity.name} extends DefaultEntity implements Serializable {
     <#if property.jsonIgnore>
     @JsonIgnore
     </#if>
+    <#list property.annotations as annotation>
+    ${annotation.annotation}
+    </#list>
     <#list property.validations as validate>
     ${validate.annotation}
     </#list>

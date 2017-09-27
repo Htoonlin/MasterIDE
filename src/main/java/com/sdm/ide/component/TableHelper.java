@@ -1,9 +1,7 @@
 package com.sdm.ide.component;
 
-import java.lang.reflect.Field;
-
 import com.sdm.ide.component.annotation.FXColumn;
-
+import java.lang.reflect.Field;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
@@ -14,6 +12,7 @@ public class TableHelper {
 
     public static <M> void generateColumns(Class<M> model, TableView<M> tableView) {
         tableView.getColumns().clear();
+
         for (Field field : model.getDeclaredFields()) {
             if (field.isAnnotationPresent(FXColumn.class)) {
                 FXColumn fxColumn = field.getAnnotation(FXColumn.class);
@@ -35,6 +34,7 @@ public class TableHelper {
                     column.setCellFactory((col) -> new BooleanCell());
                 }
                 tableView.getColumns().add(column);
+
             }
         }
     }

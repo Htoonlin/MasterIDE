@@ -47,7 +47,18 @@ public class EntityManagerController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        propertyTable.setRowFactory(tv -> {
+            TableRow<PropertyModel> row = new TableRow<>();
+            row.setOnMouseClicked(mouse -> {
+                if (mouse.getButton() == MouseButton.PRIMARY && mouse.getClickCount() == 2 && !row.isEmpty()) {
+                    PropertyModel property = row.getItem();
+                    if (property != null) {
+                        showPropertyDetail(property);
+                    }
+                }
+            });
+            return row;
+        });
     }
 
     private void clearDetail() {
@@ -85,20 +96,14 @@ public class EntityManagerController implements Initializable {
             task.setOnSucceeded((event) -> {
                 currentEntity = task.getValue();
                 TableHelper.generateColumns(PropertyModel.class, propertyTable);
-                propertyTable.setRowFactory(tv -> {
-                    TableRow<PropertyModel> row = new TableRow<>();
-                    row.setOnMouseClicked(mouse -> {
-                        if (mouse.getButton() == MouseButton.PRIMARY && mouse.getClickCount() == 2 && !row.isEmpty()) {
-                            PropertyModel property = row.getItem();
-                            if (property != null) {
-                                showPropertyDetail(property);
-                            }
-                        }
-                    });
-                    return row;
-                });
                 propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
+                propertyTable.getColumns().forEach(col -> {
+                    if (col.getText().equalsIgnoreCase("index")) {
+                        propertyTable.getSortOrder().add(col);
+                    }
+                });
                 propertyTable.refresh();
+
                 this.showDetail(null);
                 dialog.close();
             });
@@ -220,6 +225,14 @@ public class EntityManagerController implements Initializable {
             dialogStage.show();
         } catch (IOException ex) {
             AlertDialog.showException(ex);
+        }
+    }
+
+    @FXML
+    private void reloadEntity(ActionEvent event) {
+        Optional<ButtonType> result = AlertDialog.showQuestion("It will lost unsaved data. Do you want to continue?");
+        if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+            this.loadEntity(this.currentEntity.getFile());
         }
     }
 }
