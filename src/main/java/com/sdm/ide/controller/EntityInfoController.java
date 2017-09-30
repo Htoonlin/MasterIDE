@@ -1,16 +1,15 @@
 package com.sdm.ide.controller;
 
-import java.net.URL;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Set;
-
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.model.EntityModel;
-
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -50,9 +49,8 @@ public class EntityInfoController implements Initializable {
             boolean isMapped = entityClasses.contains(title);
             chkMappedWithDatabase.setSelected(isMapped);
 
-            if (entity.getImports() != null) {
-                ObservableList<String> imports = FXCollections.observableArrayList(entity.getImports());
-                Collections.sort(imports);
+            if (entity.getImportedObjects() != null) {
+                ObservableList<ImportDeclaration> imports = FXCollections.observableArrayList(entity.getImportedObjects());
                 lstImports.setItems(imports);
             }
         }
@@ -80,7 +78,7 @@ public class EntityInfoController implements Initializable {
     private CheckBox chkDynamicUpdate;
 
     @FXML
-    private ListView<String> lstImports;
+    private ListView<ImportDeclaration> lstImports;
 
     @FXML
     private Label lblEntity;
@@ -93,8 +91,9 @@ public class EntityInfoController implements Initializable {
         Optional<String> result = AlertDialog.showInput("Enter java package.",
                 new Image(getClass().getResourceAsStream("/image/module.png"), 28, 28, true, true));
         result.ifPresent(importPackage -> {
-            this.currentEntity.addImport(importPackage);
-            lstImports.getItems().add(importPackage);
+            ImportDeclaration importObject = JavaParser.parseImport(importPackage);
+            this.currentEntity.addImportedObject(importObject);
+            lstImports.getItems().add(importObject);
             lstImports.refresh();
         });
     }
@@ -102,12 +101,12 @@ public class EntityInfoController implements Initializable {
     @FXML
     void deleteKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-            final String selectedItem = lstImports.getSelectionModel().getSelectedItem();
+            final ImportDeclaration selectedItem = lstImports.getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
                 Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to delete " + selectedItem + "?");
                 result.ifPresent(buttonType -> {
                     if (buttonType.equals(ButtonType.YES)) {
-                        this.currentEntity.getImports().remove(selectedItem);
+                        this.currentEntity.getImportedObjects().remove(selectedItem);
                         lstImports.getItems().remove(selectedItem);
                         lstImports.refresh();
                     }

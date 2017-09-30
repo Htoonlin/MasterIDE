@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -41,7 +42,7 @@
                                 <CheckBox fx:id="chkDynamicUpdate" mnemonicParsing="false" selected="true" text="Dynamic Update" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>
-                        <Button mnemonicParsing="false" onAction="#importModule" prefHeight="32.0" prefWidth="500.0" text="Import New Package">
+                        <Button mnemonicParsing="false" onAction="#importModule" prefHeight="32.0" prefWidth="320.0" text="Import New Package">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
@@ -53,7 +54,11 @@
                                 <Tooltip text="Add Import" />
                             </tooltip>
                         </Button>
-                        <ListView fx:id="lstImports" onKeyPressed="#deleteKeyPressed" prefHeight="200.0" />
+                  <TitledPane collapsible="false" text="Imported Packages">
+                     <content>
+                              <ListView fx:id="lstImports" onKeyPressed="#deleteKeyPressed" prefHeight="200.0" />
+                     </content>
+                  </TitledPane>
                     </children>
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

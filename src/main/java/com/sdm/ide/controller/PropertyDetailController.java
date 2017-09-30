@@ -1,19 +1,15 @@
 package com.sdm.ide.controller;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
-
-import org.json.JSONObject;
-
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
-import com.sdm.ide.model.AnnotationModel;
-
+import java.io.IOException;
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -37,6 +33,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.converter.NumberStringConverter;
+import org.json.JSONObject;
 
 public class PropertyDetailController implements Initializable {
 
@@ -79,10 +76,10 @@ public class PropertyDetailController implements Initializable {
             this.chkUIHideInGrid.selectedProperty().bindBidirectional(property.hideInGridProperty());
             this.chkReadOnly.selectedProperty().bindBidirectional(property.readOnlyProperty());
 
-            if (property.getValidations() != null) {
-                ObservableList<AnnotationModel> validations = FXCollections
-                        .observableArrayList(property.getValidations());
-                this.lstValidations.setItems(validations);
+            if (property.getAnnotations() != null) {
+                ObservableList<AnnotationExpr> validations = FXCollections
+                        .observableArrayList(property.getAnnotations());
+                this.lstAnnotations.setItems(validations);
             }
 
         } catch (Exception ex) {
@@ -142,9 +139,9 @@ public class PropertyDetailController implements Initializable {
     private Label lblPropertyName;
 
     @FXML
-    private ListView<AnnotationModel> lstValidations;
+    private ListView<AnnotationExpr> lstAnnotations;
 
-    private void showValidation(AnnotationModel model, final boolean isUpdate) {
+    private void showValidation(AnnotationExpr model, final boolean isUpdate) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ValidationDetail.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
@@ -161,9 +158,9 @@ public class PropertyDetailController implements Initializable {
             controller.setModel(model);
             controller.onDone(result -> {
                 if (!isUpdate) {
-                    this.currentProperty.addValidation(result);
-                    lstValidations.getItems().add(result);
-                    lstValidations.refresh();
+                    this.currentProperty.addAnnotation(result);
+                    lstAnnotations.getItems().add(result);
+                    lstAnnotations.refresh();
                 }
             });
 
@@ -215,15 +212,15 @@ public class PropertyDetailController implements Initializable {
     @FXML
     void deleteValidationRule(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-            final AnnotationModel model = lstValidations.getSelectionModel().getSelectedItem();
+            final AnnotationExpr model = lstAnnotations.getSelectionModel().getSelectedItem();
             if (model != null) {
                 Optional<ButtonType> result = AlertDialog
                         .showQuestion("Are you sure to remove " + model.getName() + "?");
                 result.ifPresent(buttonType -> {
                     if (buttonType.equals(ButtonType.YES)) {
-                        this.currentProperty.getValidations().remove(model);
-                        lstValidations.getItems().remove(model);
-                        lstValidations.refresh();
+                        this.currentProperty.getAnnotations().remove(model);
+                        lstAnnotations.getItems().remove(model);
+                        lstAnnotations.refresh();
                     }
                 });
             }
@@ -232,7 +229,7 @@ public class PropertyDetailController implements Initializable {
 
     @FXML
     void selectedItem(MouseEvent event) {
-        AnnotationModel model = lstValidations.getSelectionModel().getSelectedItem();
+        AnnotationExpr model = lstAnnotations.getSelectionModel().getSelectedItem();
         if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && model != null) {
             this.showValidation(model, true);
         }

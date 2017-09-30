@@ -1,9 +1,10 @@
 package com.sdm.ide.model;
 
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -63,9 +64,9 @@ public class PropertyModel implements Serializable {
     @FXColumn(visible = false)
     private BooleanProperty readOnly;
 
-    private Set<AnnotationModel> validations;
+    private FieldDeclaration fieldObject;
 
-    private Set<AnnotationModel> annotations;
+    private NodeList<AnnotationExpr> annotations;
 
     public PropertyModel(int index) {
         this();
@@ -90,35 +91,26 @@ public class PropertyModel implements Serializable {
         this.auditable = new SimpleBooleanProperty(true);
         this.searchable = new SimpleBooleanProperty(false);
         this.jsonIgnore = new SimpleBooleanProperty(false);
-        this.validations = new HashSet<>();
-        this.annotations = new HashSet<>();
     }
 
-    public Set<AnnotationModel> getValidations() {
-        return validations;
+    public FieldDeclaration getFieldObject() {
+        return fieldObject;
     }
 
-    public void setValidations(Set<AnnotationModel> validations) {
-        this.validations = validations;
+    public void setFieldObject(FieldDeclaration fieldObject) {
+        this.fieldObject = fieldObject;
     }
 
-    public void addValidation(AnnotationModel validate) {
-        if (!this.validations.contains(validate)) {
-            this.validations.add(validate);
-        }
-    }
-
-    public Set<AnnotationModel> getAnnotations() {
+    public NodeList<AnnotationExpr> getAnnotations() {
         return annotations;
     }
 
-    public void setAnnotations(Set<AnnotationModel> annotations) {
+    public void setAnnotations(NodeList<AnnotationExpr> annotations) {
         this.annotations = annotations;
     }
 
-    public void addAnnotations(AnnotationModel annotation) {
-        if (!this.validations.contains(annotation)
-                && !this.annotations.contains(annotation)) {
+    public void addAnnotation(AnnotationExpr annotation) {
+        if (!this.annotations.contains(annotation)) {
             this.annotations.add(annotation);
         }
     }

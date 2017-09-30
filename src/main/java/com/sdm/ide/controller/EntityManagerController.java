@@ -7,7 +7,7 @@ import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.TemplateManager;
 import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
-import com.sdm.ide.task.LoadEntityTask;
+import com.sdm.ide.task.ParseEntityTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -87,11 +87,12 @@ public class EntityManagerController implements Initializable {
         }
     }
 
-    public void loadEntity(File entity) {
-        if (entity != null && entity.isFile() && entity.getName().endsWith(".java")) {
-            this.moduleDir = entity.getParent().replaceAll("entity", "");
+    public void loadEntity(File entityFile) {
+        if (entityFile != null && entityFile.isFile() && entityFile.getName().endsWith(".java")) {
+            this.moduleDir = entityFile.getParent().replaceAll("entity", "");
             ProgressDialog dialog = new ProgressDialog();
-            LoadEntityTask task = new LoadEntityTask(entity);
+            //LoadEntityTask task = new LoadEntityTask(entity);
+            ParseEntityTask task = new ParseEntityTask(entityFile);
             dialog.start(task);
             task.setOnSucceeded((event) -> {
                 currentEntity = task.getValue();
@@ -112,7 +113,7 @@ public class EntityManagerController implements Initializable {
             thread.setDaemon(true);
             thread.start();
         } else {
-            AlertDialog.showWarning("It is not java file. <" + entity.getAbsolutePath() + ">.");
+            AlertDialog.showWarning("It is not java file. <" + entityFile.getName() + ">.");
         }
     }
 

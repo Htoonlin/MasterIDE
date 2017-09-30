@@ -1,18 +1,18 @@
 package com.sdm.ide.controller;
 
-import java.net.URL;
-import java.util.Collections;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.component.Callback;
 import com.sdm.ide.helper.ValidationManager;
-import com.sdm.ide.model.AnnotationModel;
-
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -24,6 +24,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ValidationDetailController implements Initializable {
 
@@ -36,26 +38,26 @@ public class ValidationDetailController implements Initializable {
     @FXML
     private ComboBox<String> cboRules;
 
-    private AnnotationModel model;
+    private AnnotationExpr model;
 
-    public void setModel(AnnotationModel model) {
+    public void setModel(AnnotationExpr model) {
         if (model == null) {
             return;
         }
 
         this.model = model;
-        this.cboRules.getSelectionModel().select(model.getName());
+        this.cboRules.getSelectionModel().select(model.getNameAsString());
     }
 
-    private Callback<AnnotationModel> doneHandler;
+    private Callback<AnnotationExpr> doneHandler;
 
-    private Callback<AnnotationModel> cancelHandler;
+    private Callback<AnnotationExpr> cancelHandler;
 
-    public void onDone(Callback<AnnotationModel> handler) {
+    public void onDone(Callback<AnnotationExpr> handler) {
         this.doneHandler = handler;
     }
 
-    public void onCancel(Callback<AnnotationModel> handler) {
+    public void onCancel(Callback<AnnotationExpr> handler) {
         this.cancelHandler = handler;
     }
 
@@ -77,7 +79,7 @@ public class ValidationDetailController implements Initializable {
     void doneClick(ActionEvent event) {
         if (this.doneHandler != null) {
             if (this.model == null) {
-                this.model = new AnnotationModel();
+                this.model = new NormalAnnotationExpr();
             }
 
             this.model.setName(cboRules.getSelectionModel().getSelectedItem());
@@ -92,7 +94,16 @@ public class ValidationDetailController implements Initializable {
             if (node instanceof TextField) {
                 TextField input = (TextField) node;
                 if (input.getText().trim().length() > 0) {
-                    this.model.addValue(input.getId(), input.getText());
+                    MemberValuePair pair = new MemberValuePair();
+                    pair.setName(input.getId());
+                    String value = input.getText();
+                    if (value.matches("([0-9]+)")) {
+                        pair.setValue(new IntegerLiteralExpr(value));
+                    } else {
+                        pair.setValue(new StringLiteralExpr(value));
+                    }
+
+                    this.model.getChildNodes().add(pair);
                 }
             }
         }
@@ -141,8 +152,14 @@ public class ValidationDetailController implements Initializable {
         if (this.model == null) {
             return "";
         }
+        List<MemberValuePair> pairs = this.model.getChildNodesByType(MemberValuePair.class);
+        for (MemberValuePair pair : pairs) {
+            if (pair.getNameAsString().equalsIgnoreCase(param)) {
+                return pair.getValue().toString().replaceAll("\"", "");
+            }
+        }
 
-        return this.model.getValues().getOrDefault(param, "");
+        return "";
     }
 
     private void generateParams(String rule) {

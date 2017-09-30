@@ -1,11 +1,16 @@
 package com.sdm.ide.model;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,6 +21,7 @@ public final class EntityModel implements Serializable {
 
     private static final long serialVersionUID = -7804109111579775365L;
 
+    //Entity Info
     private final StringProperty name;
     private final StringProperty entityName;
     private final StringProperty tableName;
@@ -25,12 +31,17 @@ public final class EntityModel implements Serializable {
     private final BooleanProperty dynamicUpdate;
     private final BooleanProperty mappedWithDB;
 
-    private File file;
-    private Set<String> imports;
+    //Properties Info
     private Set<String> searchFields;
     private Set<PropertyModel> properties;
     private PropertyModel primaryProperty;
-    private Set<AnnotationModel> annotations;
+
+    //Java Info
+    private File file;
+    private CompilationUnit compiledObject;
+    private ClassOrInterfaceDeclaration entityObject;
+    private NodeList<AnnotationExpr> annotations;
+    private NodeList<ImportDeclaration> importedObjects;
 
     public EntityModel() {
         this.name = new SimpleStringProperty("");
@@ -41,10 +52,8 @@ public final class EntityModel implements Serializable {
         this.auditable = new SimpleBooleanProperty(false);
         this.dynamicUpdate = new SimpleBooleanProperty(false);
         this.mappedWithDB = new SimpleBooleanProperty(true);
-        this.imports = this.initImports();
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
-        this.annotations = new HashSet<>();
     }
 
     public EntityModel(File file) {
@@ -62,16 +71,7 @@ public final class EntityModel implements Serializable {
             this.setTableName("tbl_" + dbModule.replaceAll("\\.", "_"));
             this.setEntityName(basePackage);
             String resourceImport = this.getModuleName() + ".resource." + this.getName().replaceAll("Entity", "Resource");
-            this.addImport(resourceImport);
         }
-    }
-
-    private Set<String> initImports() {
-        return new HashSet<>(Arrays.asList("java.io.Serializable", "java.util.*", "java.math.*", "javax.persistence.*",
-                "javax.validation.constraints.*", "com.fasterxml.jackson.annotation.*", "org.hibernate.envers.*",
-                "javax.ws.rs.core.UriBuilder", "org.hibernate.annotations.Formula", "org.hibernate.annotations.DynamicUpdate",
-                "com.sdm.core.hibernate.entity.DefaultEntity", "com.sdm.core.response.LinkModel",
-                "com.sdm.core.ui.UIInputType", "com.sdm.core.ui.UIStructure"));
     }
 
     public String getPrimaryType() {
@@ -149,35 +149,6 @@ public final class EntityModel implements Serializable {
         return null;
     }
 
-    public Set<AnnotationModel> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(Set<AnnotationModel> annotations) {
-        this.annotations = annotations;
-    }
-
-    public void addAnnotation(AnnotationModel annotation) {
-        this.annotations.add(annotation);
-    }
-
-    public Set<String> getImports() {
-        return imports;
-    }
-
-    public void setImports(Set<String> imports) {
-        this.imports = imports;
-    }
-
-    public void addImport(String value) {
-        for (String imp : this.imports) {
-            if (imp.endsWith("*") && value.startsWith(imp.replaceAll("\\.\\*", ""))) {
-                return;
-            }
-        }
-        this.imports.add(value);
-    }
-
     public StringProperty nameProperty() {
         return this.name;
     }
@@ -223,9 +194,6 @@ public final class EntityModel implements Serializable {
     }
 
     public void setAuditable(final boolean auditable) {
-        if (!auditable) {
-            this.addImport("org.hibernate.envers.NotAudited");
-        }
         this.auditableProperty().set(auditable);
     }
 
@@ -250,9 +218,6 @@ public final class EntityModel implements Serializable {
     }
 
     public final void setDynamicUpdate(final boolean dynamicUpdate) {
-        if (dynamicUpdate) {
-            this.addImport("org.hibernate.annotations.DynamicUpdate");
-        }
         this.dynamicUpdateProperty().set(dynamicUpdate);
     }
 
@@ -286,6 +251,81 @@ public final class EntityModel implements Serializable {
 
     public void setMappedWithDB(final boolean mappedWithDB) {
         this.mappedWithDBProperty().set(mappedWithDB);
+    }
+
+    public CompilationUnit getCompiledObject() {
+        return compiledObject;
+    }
+
+    public void setCompiledObject(CompilationUnit compiledObject) {
+        this.compiledObject = compiledObject;
+    }
+
+    public ClassOrInterfaceDeclaration getEntityObject() {
+        return entityObject;
+    }
+
+    public void setEntityObject(ClassOrInterfaceDeclaration entityObject) {
+        this.entityObject = entityObject;
+    }
+
+    public NodeList<AnnotationExpr> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(NodeList<AnnotationExpr> annotations) {
+        this.annotations = annotations;
+    }
+
+    public void addAnnotation(AnnotationExpr annotation) {
+        if (this.annotations == null) {
+            this.annotations = new NodeList<>(entityObject);
+        }
+        this.annotations.add(annotation);
+    }
+
+    public NodeList<ImportDeclaration> getImportedObjects() {
+        return importedObjects;
+    }
+
+    public void setImportedObjects(NodeList<ImportDeclaration> importedObjects) {
+        this.importedObjects = importedObjects;
+    }
+
+    public void addImportedObject(ImportDeclaration importedObject) {
+        if (importedObjects == null) {
+            this.importedObjects = new NodeList<>(compiledObject);
+        }
+        this.importedObjects.add(importedObject);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + Objects.hashCode(this.name);
+        hash = 41 * hash + Objects.hashCode(this.moduleName);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final EntityModel other = (EntityModel) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.moduleName, other.moduleName)) {
+            return false;
+        }
+        return true;
     }
 
 }

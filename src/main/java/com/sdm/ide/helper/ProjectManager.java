@@ -1,9 +1,8 @@
 package com.sdm.ide.helper;
 
+import com.sdm.Constants;
 import java.io.File;
 import java.io.IOException;
-
-import com.sdm.Constants;
 
 public class ProjectManager {
 
