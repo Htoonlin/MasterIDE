@@ -91,27 +91,30 @@ public class EntityManagerController implements Initializable {
         if (entityFile != null && entityFile.isFile() && entityFile.getName().endsWith(".java")) {
             this.moduleDir = entityFile.getParent().replaceAll("entity", "");
             ProgressDialog dialog = new ProgressDialog();
-            //LoadEntityTask task = new LoadEntityTask(entity);
-            ParseEntityTask task = new ParseEntityTask(entityFile);
-            dialog.start(task);
-            task.setOnSucceeded((event) -> {
-                currentEntity = task.getValue();
-                TableHelper.generateColumns(PropertyModel.class, propertyTable);
-                propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
-                propertyTable.getColumns().forEach(col -> {
-                    if (col.getText().equalsIgnoreCase("index")) {
-                        propertyTable.getSortOrder().add(col);
-                    }
+            try {
+                ParseEntityTask task = new ParseEntityTask(entityFile);
+                dialog.start(task);
+                task.setOnSucceeded((event) -> {
+                    currentEntity = task.getValue();
+                    TableHelper.generateColumns(PropertyModel.class, propertyTable);
+                    propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
+                    propertyTable.getColumns().forEach(col -> {
+                        if (col.getText().equalsIgnoreCase("index")) {
+                            propertyTable.getSortOrder().add(col);
+                        }
+                    });
+                    propertyTable.refresh();
+
+                    this.showDetail(null);
+                    dialog.close();
                 });
-                propertyTable.refresh();
 
-                this.showDetail(null);
-                dialog.close();
-            });
-
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+                Thread thread = new Thread(task);
+                thread.setDaemon(true);
+                thread.start();
+            } catch (Exception ex) {
+                AlertDialog.showException(ex);
+            }
         } else {
             AlertDialog.showWarning("It is not java file. <" + entityFile.getName() + ">.");
         }

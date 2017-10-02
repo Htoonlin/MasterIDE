@@ -1,29 +1,18 @@
 package com.sdm.ide.controller;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.model.EntityModel;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 public class EntityInfoController implements Initializable {
 
@@ -48,11 +37,6 @@ public class EntityInfoController implements Initializable {
             Set<String> entityClasses = HibernateManager.getInstance().getEntities();
             boolean isMapped = entityClasses.contains(title);
             chkMappedWithDatabase.setSelected(isMapped);
-
-            if (entity.getImportedObjects() != null) {
-                ObservableList<ImportDeclaration> imports = FXCollections.observableArrayList(entity.getImportedObjects());
-                lstImports.setItems(imports);
-            }
         }
     }
 
@@ -78,42 +62,10 @@ public class EntityInfoController implements Initializable {
     private CheckBox chkDynamicUpdate;
 
     @FXML
-    private ListView<ImportDeclaration> lstImports;
-
-    @FXML
     private Label lblEntity;
 
     @FXML
     private ScrollPane mainScrollPane;
-
-    @FXML
-    void importModule(ActionEvent event) {
-        Optional<String> result = AlertDialog.showInput("Enter java package.",
-                new Image(getClass().getResourceAsStream("/image/module.png"), 28, 28, true, true));
-        result.ifPresent(importPackage -> {
-            ImportDeclaration importObject = JavaParser.parseImport(importPackage);
-            this.currentEntity.addImportedObject(importObject);
-            lstImports.getItems().add(importObject);
-            lstImports.refresh();
-        });
-    }
-
-    @FXML
-    void deleteKeyPressed(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-            final ImportDeclaration selectedItem = lstImports.getSelectionModel().getSelectedItem();
-            if (selectedItem != null) {
-                Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to delete " + selectedItem + "?");
-                result.ifPresent(buttonType -> {
-                    if (buttonType.equals(ButtonType.YES)) {
-                        this.currentEntity.getImportedObjects().remove(selectedItem);
-                        lstImports.getItems().remove(selectedItem);
-                        lstImports.refresh();
-                    }
-                });
-            }
-        }
-    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

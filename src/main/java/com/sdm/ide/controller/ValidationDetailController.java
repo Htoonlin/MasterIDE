@@ -1,8 +1,11 @@
 package com.sdm.ide.controller;
 
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.sdm.ide.component.AlertDialog;
@@ -78,18 +81,23 @@ public class ValidationDetailController implements Initializable {
     @FXML
     void doneClick(ActionEvent event) {
         if (this.doneHandler != null) {
+            NodeList<MemberValuePair> pairs = this.getInputValues();
+            Name name = new Name(cboRules.getSelectionModel().getSelectedItem());
             if (this.model == null) {
-                this.model = new NormalAnnotationExpr();
-            }
+                if (pairs.isEmpty()) {
+                    this.model = new MarkerAnnotationExpr(name);
+                } else {
+                    this.model = new NormalAnnotationExpr(name, pairs);
+                }
 
-            this.model.setName(cboRules.getSelectionModel().getSelectedItem());
-            this.setInputValues();
+            }
             this.doneHandler.call(this.model);
         }
         this.close();
     }
 
-    private void setInputValues() {
+    private NodeList<MemberValuePair> getInputValues() {
+        NodeList<MemberValuePair> pairs = new NodeList<>();
         for (Node node : this.itemBox.getChildren()) {
             if (node instanceof TextField) {
                 TextField input = (TextField) node;
@@ -102,11 +110,11 @@ public class ValidationDetailController implements Initializable {
                     } else {
                         pair.setValue(new StringLiteralExpr(value));
                     }
-
-                    this.model.getChildNodes().add(pair);
+                    pairs.add(pair);
                 }
             }
         }
+        return pairs;
     }
 
     private void generatePatternParam(final TextField txtRegexPattern) {

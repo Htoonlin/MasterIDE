@@ -2,6 +2,7 @@ package com.sdm.ide.model;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
@@ -14,9 +15,6 @@ import javafx.beans.property.StringProperty;
 
 public class PropertyModel implements Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 1027044065751863361L;
 
     /* Java Properties */
@@ -66,7 +64,11 @@ public class PropertyModel implements Serializable {
 
     private FieldDeclaration fieldObject;
 
-    private NodeList<AnnotationExpr> annotations;
+    private MethodDeclaration getter;
+
+    private MethodDeclaration setter;
+
+    private NodeList<AnnotationExpr> validations;
 
     public PropertyModel(int index) {
         this();
@@ -91,6 +93,7 @@ public class PropertyModel implements Serializable {
         this.auditable = new SimpleBooleanProperty(true);
         this.searchable = new SimpleBooleanProperty(false);
         this.jsonIgnore = new SimpleBooleanProperty(false);
+        this.validations = new NodeList<>();
     }
 
     public FieldDeclaration getFieldObject() {
@@ -101,17 +104,34 @@ public class PropertyModel implements Serializable {
         this.fieldObject = fieldObject;
     }
 
-    public NodeList<AnnotationExpr> getAnnotations() {
-        return annotations;
+    public MethodDeclaration getGetter() {
+        return getter;
     }
 
-    public void setAnnotations(NodeList<AnnotationExpr> annotations) {
-        this.annotations = annotations;
+    public void setGetter(MethodDeclaration getter) {
+        this.getter = getter;
     }
 
-    public void addAnnotation(AnnotationExpr annotation) {
-        if (!this.annotations.contains(annotation)) {
-            this.annotations.add(annotation);
+    public MethodDeclaration getSetter() {
+        return setter;
+    }
+
+    public void setSetter(MethodDeclaration setter) {
+        this.setter = setter;
+    }
+
+    public NodeList<AnnotationExpr> getValidations() {
+        return validations;
+    }
+
+    public void setValidations(NodeList<AnnotationExpr> validations) {
+        this.validations = validations;
+    }
+
+    public void addValidation(AnnotationExpr annotation) {
+        if (!this.validations.contains(annotation)) {
+            this.fieldObject.addAnnotation(annotation);
+            this.validations.add(annotation);
         }
     }
 

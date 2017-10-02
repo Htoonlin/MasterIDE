@@ -1,10 +1,7 @@
 package com.sdm.ide.model;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import java.io.File;
@@ -40,8 +37,6 @@ public final class EntityModel implements Serializable {
     private File file;
     private CompilationUnit compiledObject;
     private ClassOrInterfaceDeclaration entityObject;
-    private NodeList<AnnotationExpr> annotations;
-    private NodeList<ImportDeclaration> importedObjects;
 
     public EntityModel() {
         this.name = new SimpleStringProperty("");
@@ -267,36 +262,6 @@ public final class EntityModel implements Serializable {
 
     public void setEntityObject(ClassOrInterfaceDeclaration entityObject) {
         this.entityObject = entityObject;
-    }
-
-    public NodeList<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(NodeList<AnnotationExpr> annotations) {
-        this.annotations = annotations;
-    }
-
-    public void addAnnotation(AnnotationExpr annotation) {
-        if (this.annotations == null) {
-            this.annotations = new NodeList<>(entityObject);
-        }
-        this.annotations.add(annotation);
-    }
-
-    public NodeList<ImportDeclaration> getImportedObjects() {
-        return importedObjects;
-    }
-
-    public void setImportedObjects(NodeList<ImportDeclaration> importedObjects) {
-        this.importedObjects = importedObjects;
-    }
-
-    public void addImportedObject(ImportDeclaration importedObject) {
-        if (importedObjects == null) {
-            this.importedObjects = new NodeList<>(compiledObject);
-        }
-        this.importedObjects.add(importedObject);
     }
 
     @Override

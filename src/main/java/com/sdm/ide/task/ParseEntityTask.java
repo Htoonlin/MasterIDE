@@ -9,16 +9,19 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.sdm.ide.helper.TypeManager;
+import com.sdm.ide.helper.ValidationManager;
 import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.concurrent.Task;
@@ -32,10 +35,12 @@ public class ParseEntityTask extends Task<EntityModel> {
 
     private final File javaFile;
     private final EntityModel entity;
+    private final Set<String> validations;
 
-    public ParseEntityTask(File javaFile) {
+    public ParseEntityTask(File javaFile) throws Exception {
         super();
         this.javaFile = javaFile;
+        this.validations = ValidationManager.getInstance().getValidations().toMap().keySet();
         updateMessage("Init entity.");
         this.entity = new EntityModel(javaFile);
     }
@@ -63,10 +68,6 @@ public class ParseEntityTask extends Task<EntityModel> {
             showMessage("Loaded module : " + module);
         });
 
-        //Load imports
-        this.entity.setImportedObjects(cu.getImports());
-        showMessage("Imported object size : " + this.entity.getImportedObjects().size() + ".");
-
         //Load Entity
         cu.getClassByName(this.entity.getName()).ifPresent(entityObject -> {
             showMessage("Found " + entityObject.getNameAsString());
@@ -83,8 +84,6 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void loadEntityInfo(ClassOrInterfaceDeclaration entityObject) {
-        this.entity.setAnnotations(entityObject.getAnnotations());
-
         //Load Auditable
         if (entityObject.isAnnotationPresent("Audited")) {
             showMessage("Auditable : true");
@@ -176,6 +175,11 @@ public class ParseEntityTask extends Task<EntityModel> {
             String propertyName = method.getNameAsString().replaceAll("(get|set)", "");
             PropertyModel property = this.entity.findProperty(propertyName);
             if (property != null) {
+                if (propertyName.startsWith("get")) {
+                    property.setGetter(method);
+                } else if (propertyName.startsWith("setter")) {
+                    property.setSetter(method);
+                }
                 this.propertyAnalysis(property, method);
             }
         });
@@ -236,9 +240,6 @@ public class ParseEntityTask extends Task<EntityModel> {
         property.setInputType(json.getString("input"));
         property.setColumnDef(json.getString("db"));
 
-        //Load property annotations
-        property.setAnnotations(field.getAnnotations());
-
         //Analysis property now
         this.propertyAnalysis(property, field);
 
@@ -252,6 +253,7 @@ public class ParseEntityTask extends Task<EntityModel> {
         if (property.isPrimary()) {
             this.entity.setPrimaryProperty(property);
         }
+        property.setFieldObject(field);
         this.entity.addProperty(property);
     }
 
@@ -267,6 +269,12 @@ public class ParseEntityTask extends Task<EntityModel> {
 
         if (node.isAnnotationPresent("NotAudited")) {
             property.setAuditable(false);
+        }
+
+        for (String constraint : this.validations) {
+            node.getAnnotationByName(constraint).ifPresent(validation -> {
+                property.addValidation((AnnotationExpr) validation);
+            });
         }
 
         node.getAnnotationByName("UIStructure").ifPresent(annotation -> {

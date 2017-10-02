@@ -76,9 +76,9 @@ public class PropertyDetailController implements Initializable {
             this.chkUIHideInGrid.selectedProperty().bindBidirectional(property.hideInGridProperty());
             this.chkReadOnly.selectedProperty().bindBidirectional(property.readOnlyProperty());
 
-            if (property.getAnnotations() != null) {
+            if (property.getValidations() != null) {
                 ObservableList<AnnotationExpr> validations = FXCollections
-                        .observableArrayList(property.getAnnotations());
+                        .observableArrayList(property.getValidations());
                 this.lstAnnotations.setItems(validations);
             }
 
@@ -158,7 +158,7 @@ public class PropertyDetailController implements Initializable {
             controller.setModel(model);
             controller.onDone(result -> {
                 if (!isUpdate) {
-                    this.currentProperty.addAnnotation(result);
+                    this.currentProperty.addValidation(result);
                     lstAnnotations.getItems().add(result);
                     lstAnnotations.refresh();
                 }
@@ -218,7 +218,7 @@ public class PropertyDetailController implements Initializable {
                         .showQuestion("Are you sure to remove " + model.getName() + "?");
                 result.ifPresent(buttonType -> {
                     if (buttonType.equals(ButtonType.YES)) {
-                        this.currentProperty.getAnnotations().remove(model);
+                        this.currentProperty.getValidations().remove(model);
                         lstAnnotations.getItems().remove(model);
                         lstAnnotations.refresh();
                     }

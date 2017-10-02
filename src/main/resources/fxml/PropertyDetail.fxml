@@ -101,7 +101,7 @@
                                 <Tooltip text="Add New Validation Rule" />
                             </tooltip>
                         </Button>
-                  <TitledPane collapsible="false" text="\@Annotations">
+                  <TitledPane collapsible="false" text="Property Validations">
                      <content>
                               <ListView fx:id="lstAnnotations" minHeight="-Infinity" onKeyPressed="#deleteValidationRule" onMouseClicked="#selectedItem" prefHeight="150.0" />
                      </content>

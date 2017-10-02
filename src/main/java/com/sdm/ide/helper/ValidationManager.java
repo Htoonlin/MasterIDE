@@ -43,20 +43,6 @@ public class ValidationManager {
         }
     }
 
-    public boolean checkConstraint(String constraint) {
-        if (!constraint.startsWith("@")) {
-            return false;
-        }
-
-        for (String rule : rulesMapping.keySet()) {
-            if (constraint.contains("@" + rule)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public Map<String, String> getPatterns() {
         return patterns;
     }
