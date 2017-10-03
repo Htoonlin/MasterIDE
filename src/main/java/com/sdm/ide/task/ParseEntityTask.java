@@ -190,9 +190,11 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void loadSearchFields(String formula) {
-        Matcher matcher = Pattern.compile("concat\\(.*\\)").matcher(formula);
+        Matcher matcher = Pattern.compile("\\(.*\\)").matcher(formula);
         if (matcher.find()) {
-            String[] columns = matcher.group().trim().split(",");
+            String code = matcher.group().substring(1);
+            code = code.substring(0, code.length() - 1);
+            String[] columns = code.trim().split(",");
             for (String col : columns) {
                 this.entity.addSearchField(col.trim());
             }
