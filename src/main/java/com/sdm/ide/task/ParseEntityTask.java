@@ -61,6 +61,11 @@ public class ParseEntityTask extends Task<EntityModel> {
         this.entity.setCompiledObject(cu);
         showMessage("Parsed entity file.");
 
+        //Load Imports
+        cu.getImports().forEach(importedObject -> {
+            this.entity.addImport(importedObject.getNameAsString());
+        });
+
         //Load Package
         cu.getPackageDeclaration().ifPresent(pkg -> {
             String module = pkg.getNameAsString().replaceAll("\\.entity$", "");
@@ -147,7 +152,6 @@ public class ParseEntityTask extends Task<EntityModel> {
                             this.loadSearchFields(pair.getValue().toString().replaceAll("\"", ""));
                         }
                     });
-
                 }
             });
         });

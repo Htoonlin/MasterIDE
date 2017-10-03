@@ -7,6 +7,7 @@ import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -38,6 +39,7 @@ public final class EntityModel implements Serializable {
     private File file;
     private CompilationUnit compiledObject;
     private ClassOrInterfaceDeclaration entityObject;
+    private Set<String> importedObjects;
 
     public EntityModel() {
         this.name = new SimpleStringProperty("");
@@ -50,6 +52,22 @@ public final class EntityModel implements Serializable {
         this.mappedWithDB = new SimpleBooleanProperty(true);
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
+        this.importedObjects = new HashSet<>(Arrays.asList(
+                "java.util.*",
+                "java.math.*",
+                "javax.persistence.*",
+                "javax.validation.constraints.*",
+                "com.fasterxml.jackson.annotation.*",
+                "org.hibernate.envers.*",
+                "java.io.Serializable",
+                "javax.ws.rs.core.UriBuilder",
+                "org.hibernate.annotations.Formula",
+                "org.hibernate.annotations.DynamicUpdate",
+                "com.sdm.core.hibernate.entity.DefaultEntity",
+                "com.sdm.core.response.LinkModel",
+                "com.sdm.core.ui.UIInputType",
+                "com.sdm.core.ui.UIStructure"
+        ));
     }
 
     public EntityModel(File file) {
@@ -285,6 +303,23 @@ public final class EntityModel implements Serializable {
 
     public void setEntityObject(ClassOrInterfaceDeclaration entityObject) {
         this.entityObject = entityObject;
+    }
+
+    public Set<String> getImportedObjects() {
+        return importedObjects;
+    }
+
+    public void setImportedObjects(Set<String> importedObjects) {
+        this.importedObjects = importedObjects;
+    }
+
+    public void addImport(String importedObject) {
+        for (String imp : this.importedObjects) {
+            if (imp.endsWith("*") && importedObject.startsWith(imp.replaceAll("\\.\\*", ""))) {
+                return;
+            }
+        }
+        this.importedObjects.add(importedObject);
     }
 
     @Override

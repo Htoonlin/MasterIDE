@@ -13,8 +13,8 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import javafx.concurrent.Task;
 import javax.xml.transform.TransformerException;
@@ -41,28 +42,11 @@ public class WriteEntityTask extends Task<Boolean> {
 
     private final EntityModel entity;
 
-    private final String[] imports = {
-        "java.util.*",
-        "java.math.*",
-        "javax.persistence.*",
-        "javax.validation.constraints.*",
-        "com.fasterxml.jackson.annotation.*",
-        "org.hibernate.envers.*",
-        "java.io.Serializable",
-        "javax.ws.rs.core.UriBuilder",
-        "org.hibernate.annotations.Formula",
-        "org.hibernate.annotations.DynamicUpdate",
-        "com.sdm.core.hibernate.entity.DefaultEntity",
-        "com.sdm.core.response.LinkModel",
-        "com.sdm.core.ui.UIInputType",
-        "com.sdm.core.ui.UIStructure"
-    };
-
     private final String[] processAnnotations = {
         "UIStructure", "Column",
         "Audited", "NotAudited",
         "JsonIgnore",
-        "Formula", "Id", "GeneratedValue"
+        "Id", "GeneratedValue"
     };
 
     public WriteEntityTask(EntityModel entity) {
@@ -78,30 +62,53 @@ public class WriteEntityTask extends Task<Boolean> {
         }
     }
 
+    private BlockStmt createBody(String... statements) {
+        BlockStmt body = new BlockStmt();
+        for (String statement : statements) {
+            body.addStatement(statement);
+        }
+        return body;
+    }
+
+    private void cleanEntityAnnotations(ClassOrInterfaceDeclaration entityObject) {
+        entityObject.getAnnotationByName("Audited").ifPresent(anno -> entityObject.remove(anno));
+        entityObject.getAnnotationByName("DynamicUpdate").ifPresent(anno -> entityObject.remove(anno));
+        entityObject.getAnnotationByName("Entity").ifPresent(anno -> entityObject.remove(anno));
+        entityObject.getAnnotationByName("Table").ifPresent(anno -> entityObject.remove(anno));
+    }
+
     private void initEntity() {
         showMessage("Creating new entity.");
         CompilationUnit cu = this.entity.getCompiledObject();
         if (cu == null) {
             cu = new CompilationUnit(entity.getModuleName());
         } else {
-            cu.setPackageDeclaration(entity.getModuleName());
+            cu.setPackageDeclaration(entity.getModuleName() + ".entity");
         }
         //Add imports
-        for (String pkg : this.imports) {
-            cu.addImport(pkg);
-        }
+        cu.getImports().forEach(importedObject -> {
+            this.entity.addImport(importedObject.getNameAsString());
+        });
         String resourcePackage = this.entity.getModuleName() + ".resource."
                 + this.entity.getBaseName() + "Resource";
-        cu.addImport(resourcePackage);
+        this.entity.addImport(resourcePackage);
 
-        ClassOrInterfaceDeclaration entityObject = cu.addClass(entity.getName(), Modifier.PUBLIC);
-        entityObject.addExtendedType("DefaultEntity");
-        entityObject.addImplementedType("Serializable");
+        for (String pkg : this.entity.getImportedObjects()) {
+            cu.addImport(pkg);
+        }
+
+        ClassOrInterfaceDeclaration entityObject = entity.getEntityObject();
+        if (entityObject == null) {
+            entityObject = cu.addClass(entity.getName(), Modifier.PUBLIC);
+            entityObject.addExtendedType("DefaultEntity");
+            entityObject.addImplementedType("Serializable");
+        } else {
+            this.cleanEntityAnnotations(entityObject);
+        }
 
         //Add Auditable
         if (this.entity.isAuditable()) {
             this.showMessage("Add => @Audited");
-            cu.addImport("Audited");
             entityObject.addMarkerAnnotation("Audited");
         }
 
@@ -133,54 +140,35 @@ public class WriteEntityTask extends Task<Boolean> {
             this.generateSerializeField(entityObject);
         }
 
-        //Add Search Field 
-        if (!entityObject.getFieldByName("search").isPresent()) {
-            this.createSearchField(entityObject);
-        }
-
-        //Add Self Link to entity
-        if (entityObject.getMethodsByName("getSelfLink").isEmpty()) {
-            this.createSelfLink(entityObject);
-        }
-
         this.entity.setCompiledObject(cu);
         this.entity.setEntityObject(entityObject);
         showMessage("Created blank entity");
     }
 
-    private void createSearchField(ClassOrInterfaceDeclaration entityObject) {
+    private void addSearchFormula(FieldDeclaration searchField) {
         this.showMessage("Creating search property.");
-        FieldDeclaration searchField = entityObject.addField(String.class, "search", Modifier.PRIVATE);
-        //Add @JsonIgnore
-        searchField.addMarkerAnnotation("JsonIgnore");
 
-        //Add @NotAudited
-        searchField.addMarkerAnnotation("NotAudited");
+        searchField.getAnnotationByName("Formula").ifPresent(oldFormula -> searchField.remove(oldFormula));
 
         //Add @Formula
         NormalAnnotationExpr formulaAnnotation = new NormalAnnotationExpr();
         formulaAnnotation.setName("Formula");
-        String formula = "\"concat(" + String.join(", ", entity.getSearchFields()) + ")\"";
-        formulaAnnotation.addPair("value", formula);
+        String formula = String.join(", ", entity.getSearchFields());
+        formulaAnnotation.addPair("value", "\"concat(" + formula + ")\"");
         searchField.addAnnotation(formulaAnnotation);
-
-        searchField.createGetter();
-        searchField.createSetter();
     }
 
     private void createSelfLink(ClassOrInterfaceDeclaration entityObject) {
         MethodDeclaration selfLink = entityObject.addMethod("getSelfLink", Modifier.PUBLIC);
         selfLink.setType("LinkModel");
 
-        BlockStmt body = new BlockStmt();
         String resourceName = this.entity.getBaseName() + "Resource";
-        String statement = "String selfLink = UriBuilder.fromResource(" + resourceName + ".class).build().toString()";
-        body.addStatement(statement);
-        statement = "selfLink += \"/\" + this." + this.entity.getPrimaryProperty().getName() + " + \"/\"";
-        body.addStatement(statement);
-        statement = "return new LinkModel(selfLink)";
-        body.addStatement(statement);
-        selfLink.setBody(body);
+        String line1 = "String selfLink = UriBuilder.fromResource(" + resourceName + ".class).build().toString();";
+        String line2 = "selfLink += \"/\" + this." + this.entity.getPrimaryProperty().getName() + " + \"/\";";
+        String line3 = "return new LinkModel(selfLink);";
+        selfLink.setBody(this.createBody(line1, line2, line3));
+
+        selfLink.addSingleMemberAnnotation("JsonGetter", new StringLiteralExpr("&detail_link"));
     }
 
     private void generateSerializeField(ClassOrInterfaceDeclaration entityObject) {
@@ -328,22 +316,25 @@ public class WriteEntityTask extends Task<Boolean> {
         cu.addImport(entity.getModuleName() + ".entity." + entity.getName());
 
         ClassOrInterfaceDeclaration resourceObject = cu.addClass(resource, Modifier.PUBLIC);
+        resourceObject.addExtendedType("RestResource<" + entity.getName() + ", " + entity.getPrimaryType() + ">");
+
         FieldDeclaration loggerField = resourceObject.addField("Logger", "LOG", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
         loggerField.getVariable(0).setInitializer("Logger.getLogger(" + entity.getBaseName() + "Resource.class.getName())");
 
-        MethodDeclaration getLogger = resourceObject.addMethod("getLogger", Modifier.PRIVATE);
+        MethodDeclaration getLogger = resourceObject.addMethod("getLogger", Modifier.PROTECTED);
         getLogger.addMarkerAnnotation("Override");
         getLogger.setType("Logger");
-        getLogger.createBody().addStatement(entity.getBaseName() + "Resource.LOG");
+        getLogger.setBody(this.createBody("return " + entity.getBaseName() + "Resource.LOG;"));
 
+        resourceObject.addField(entity.getBaseName() + "DAO", "mainDAO", Modifier.PRIVATE);
         MethodDeclaration init = resourceObject.addMethod("init", Modifier.PRIVATE);
         init.addMarkerAnnotation("PostConstruct");
-        init.createBody().addStatement("mainDAO = new " + entity.getBaseName() + "DAO(getUserId())");
+        init.setBody(this.createBody("mainDAO = new " + entity.getBaseName() + "DAO(getUserId());"));
 
         MethodDeclaration getDAO = resourceObject.addMethod("getDAO", Modifier.PROTECTED);
         getDAO.addMarkerAnnotation("Override");
         getDAO.setType("RestDAO");
-        getDAO.createBody().addStatement("return this.mainDAO");
+        getDAO.setBody(this.createBody("return this.mainDAO;"));
 
         Files.write(resourceFile.toPath(), cu.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         this.showMessage("Successfully created " + resource + ".java file.");
@@ -354,9 +345,10 @@ public class WriteEntityTask extends Task<Boolean> {
         this.showMessage("Checking resource file.");
         String resource = entity.getBaseName() + "Resource";
         String modulePath = entity.getFile().getParentFile().getParent();
-        File resourceFile = new File(modulePath + File.separatorChar + resource + ".java");
+        File resourceFile = new File(modulePath + File.separatorChar
+                + "resource" + File.separatorChar + resource + ".java");
         CompilationUnit cu;
-        if (!resourceFile.exists()) {
+        if (!resourceFile.exists() && resourceFile.createNewFile()) {
             cu = this.newResourceFile(resourceFile, resource);
         } else {
             cu = JavaParser.parse(resourceFile);
@@ -364,21 +356,10 @@ public class WriteEntityTask extends Task<Boolean> {
 
         cu.getClassByName(resource).ifPresent(resourceObject -> {
             resourceObject.getAnnotationByName("Path").ifPresent(annotation -> {
-                //Check Annotation Type
-                if (annotation instanceof SingleMemberAnnotationExpr) {
-                    SingleMemberAnnotationExpr pathAnno = (SingleMemberAnnotationExpr) annotation;
-                    pathAnno.setMemberValue(new StringLiteralExpr(entity.getResourcePath()));
-                } else if (annotation instanceof NormalAnnotationExpr) {
-                    NormalAnnotationExpr pathAnno = (NormalAnnotationExpr) annotation;
-                    pathAnno.getPairs().forEach(pair -> {
-                        if (pair.getNameAsString().equalsIgnoreCase("value")) {
-                            pair.setValue(new StringLiteralExpr(entity.getResourcePath()));
-                        }
-                    });
-                }
-
-                this.showMessage("Updated resource path.");
+                resourceObject.remove(annotation);
             });
+            resourceObject.addSingleMemberAnnotation("Path", new StringLiteralExpr(entity.getResourcePath()));
+            this.showMessage("Updated resource path.");
         });
 
     }
@@ -387,8 +368,9 @@ public class WriteEntityTask extends Task<Boolean> {
         this.showMessage("Checking DAO file.");
         String dao = entity.getBaseName() + "DAO";
         String modulePath = entity.getFile().getParentFile().getParent();
-        File daoFile = new File(modulePath + File.separatorChar + dao + ".java");
-        if (!daoFile.exists()) {
+        File daoFile = new File(modulePath + File.separatorChar
+                + "dao" + File.separatorChar + dao + ".java");
+        if (!daoFile.exists() && daoFile.createNewFile()) {
             this.showMessage("Creating new DAO file.");
 
             CompilationUnit cu = new CompilationUnit();
@@ -402,14 +384,19 @@ public class WriteEntityTask extends Task<Boolean> {
 
             ConstructorDeclaration constUser = daoObject.addConstructor(Modifier.PUBLIC);
             constUser.addParameter(PrimitiveType.intType(), "userId");
-            String statement = "super(" + entity.getName() + ".class.getName(), userId)";
-            constUser.createBody().addStatement(statement);
+            MethodCallExpr call = new MethodCallExpr(null, "super");
+            call.addArgument(entity.getName() + ".class.getName()");
+            call.addArgument("userId");
+            constUser.createBody().addStatement(call);
 
             ConstructorDeclaration constUserWithSession = daoObject.addConstructor(Modifier.PUBLIC);
             constUserWithSession.addParameter("Session", "session");
             constUserWithSession.addParameter(PrimitiveType.intType(), "userId");
-            statement = "super(session, " + entity.getName() + ".class.getName(), userId)";
-            constUserWithSession.createBody().addStatement(statement);
+            call = new MethodCallExpr(null, "super");
+            call.addArgument("session");
+            call.addArgument(entity.getName() + ".class.getName()");
+            call.addArgument("userId");
+            constUserWithSession.createBody().addStatement(call);
 
             Files.write(daoFile.toPath(), cu.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
             this.showMessage("Successfully created " + dao + ".java file.");
@@ -430,16 +417,41 @@ public class WriteEntityTask extends Task<Boolean> {
 
     @Override
     protected Boolean call() throws Exception {
-        //Is it new entity?
-        if (this.entity.getCompiledObject() == null
-                || this.entity.getEntityObject() == null) {
-            this.initEntity();
-        }
+        //Init Entity
+        this.initEntity();
+
+        //Clean search fields
+        this.entity.setSearchFields(new HashSet<>());
 
         //Add properties to entity
         ClassOrInterfaceDeclaration entityObject = this.entity.getEntityObject();
         for (PropertyModel property : this.entity.getProperties()) {
             this.createProperty(entityObject, property);
+        }
+
+        //Add Search Field 
+        if (!entityObject.getFieldByName("search").isPresent()) {
+            FieldDeclaration searchField = entityObject.addField(String.class, "search", Modifier.PRIVATE);
+            //Add @JsonIgnore
+            searchField.addMarkerAnnotation("JsonIgnore");
+
+            //Add @NotAudited
+            searchField.addMarkerAnnotation("NotAudited");
+
+            this.addSearchFormula(searchField);
+            if (entityObject.getMethodsByName("getSearch").isEmpty()) {
+                searchField.createGetter();
+            }
+            if (entityObject.getMethodsByName("setSearch").isEmpty()) {
+                searchField.createSetter();
+            }
+        } else {
+            entityObject.getFieldByName("search").ifPresent(searchField -> this.addSearchFormula(searchField));
+        }
+
+        //Add Self Link to entity
+        if (entityObject.getMethodsByName("getSelfLink").isEmpty()) {
+            this.createSelfLink(entityObject);
         }
 
         //Write Entity File
