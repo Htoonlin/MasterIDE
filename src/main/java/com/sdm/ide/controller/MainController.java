@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -102,8 +102,6 @@ public class MainController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/HibernateSetting.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
-            HibernateSettingController controller = loader.getController();
-            controller.setRootTree(projectTreeView.getRoot());
             this.loadNode(root);
         } catch (IOException ex) {
             AlertDialog.showException(ex);
@@ -233,11 +231,13 @@ public class MainController implements Initializable {
                         new Image(getClass().getResourceAsStream("/image/entity.png"), 28, 28, true, true));
                 result.ifPresent((name) -> {
                     if (ProjectManager.validJavaClass(name) && name.endsWith("Entity")) {
-                        File entityFile = new File(model.getFile().getPath()
-                                .replaceAll("[A-Z][a-zA-Z0-9]*(Entity)\\.java", (name + ".java")));
+                        File entityFile = new File(model.getFile().getParent() + File.separatorChar + name + ".java");
                         try {
-                            Files.copy(model.getFile().toPath(), entityFile.toPath(),
-                                    StandardCopyOption.REPLACE_EXISTING);
+                            //Clone File
+                            String source = new String(Files.readAllBytes(model.getFile().toPath()));
+                            source = source.replaceAll(model.getLabel(), name);
+                            Files.write(entityFile.toPath(), source.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+
                             ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name);
                             TreeItem<ProjectTreeModel> entityTree = new TreeItem<>(entityModel,
                                     new ImageView(entityModel.getImage()));

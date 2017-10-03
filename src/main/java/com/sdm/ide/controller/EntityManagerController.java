@@ -3,11 +3,10 @@ package com.sdm.ide.controller;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.component.ProgressDialog;
 import com.sdm.ide.component.TableHelper;
-import com.sdm.ide.helper.HibernateManager;
-import com.sdm.ide.helper.TemplateManager;
 import com.sdm.ide.model.EntityModel;
 import com.sdm.ide.model.PropertyModel;
 import com.sdm.ide.task.ParseEntityTask;
+import com.sdm.ide.task.WriteEntityTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -150,7 +149,7 @@ public class EntityManagerController implements Initializable {
                 if (property.isPrimary()) {
                     this.currentEntity.setPrimaryProperty(null);
                 }
-                this.currentEntity.getProperties().remove(property);
+                this.currentEntity.removeProperty(property);
                 this.propertyTable.getItems().remove(property);
                 this.propertyTable.refresh();
             }
@@ -175,39 +174,21 @@ public class EntityManagerController implements Initializable {
             return;
         }
 
-        TemplateManager manager = new TemplateManager();
-        try {
-            manager.writeEntity(this.currentEntity, this.moduleDir);
-
-            // Generate DAO or not?
-            String daoName = this.currentEntity.getName().replaceAll("Entity", "DAO.java");
-            Optional<ButtonType> result = AlertDialog.showQuestion(
-                    "Do you want to generate DAO? It will override if " + daoName + " file already existed.");
-            if (result.get() == ButtonType.YES) {
-                manager.writeDAO(this.currentEntity, this.moduleDir);
-
-                // Generate Resource or not?
-                String resourceName = this.currentEntity.getName().replaceAll("Entity", "Resource.java");
-                result = AlertDialog.showQuestion("Do you want to generate Resource? It will override if "
-                        + resourceName + " file already existed.");
-                if (result.get() == ButtonType.YES) {
-                    manager.writeResource(this.currentEntity, this.moduleDir);
-                }
-            }
-
-            // Write mapping in hibernate config file.
-            String entityClass = this.currentEntity.getModuleName() + ".entity." + this.currentEntity.getName();
-            if (this.currentEntity.isMappedWithDB()) {
-                HibernateManager.getInstance().addEntity(entityClass);
+        WriteEntityTask task = new WriteEntityTask(currentEntity);
+        ProgressDialog dialog = new ProgressDialog();
+        dialog.start(task);
+        task.setOnSucceeded(worker -> {
+            dialog.close();
+            if (task.getValue()) {
+                AlertDialog.showInfo("Save successful.");
             } else {
-                HibernateManager.getInstance().removeMapping(entityClass);
+                AlertDialog.showWarning("Something wrong in code generation process.");
             }
-            HibernateManager.getInstance().writeConfig();
+        });
 
-            AlertDialog.showInfo("Save successful.");
-        } catch (Exception e) {
-            AlertDialog.showException(e);
-        }
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
 
     }
 
@@ -217,7 +198,7 @@ public class EntityManagerController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CodeEditor.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
             CodeEditorController controller = loader.getController();
-            controller.setFile(currentEntity.getFile());
+            controller.setEntity(currentEntity);
 
             Scene dialogScene = new Scene(root, 720, 500);
             dialogScene.getStylesheets().add(getClass().getResource("/fxml/java-keywords.css").toExternalForm());

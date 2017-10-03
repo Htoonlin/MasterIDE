@@ -1,7 +1,6 @@
 package com.sdm.ide.model;
 
 import java.io.Serializable;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -22,6 +21,12 @@ public class DatabaseModel implements Serializable {
         this.schema = new SimpleStringProperty("sundwe_api");
         this.user = new SimpleStringProperty("root");
         this.password = new SimpleStringProperty("");
+    }
+
+    public String getURL() {
+        return "jdbc:mysql://" + this.getHost()
+                + "/" + this.getSchema()
+                + "?zeroDateTimeBehavior=convertToNull&amp;useUnicode=true&amp;characterEncoding=UTF-8";
     }
 
     public SimpleStringProperty hostProperty() {

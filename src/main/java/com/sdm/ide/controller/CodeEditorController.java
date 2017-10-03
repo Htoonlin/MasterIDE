@@ -6,9 +6,8 @@
 package com.sdm.ide.controller;
 
 import com.sdm.ide.component.AlertDialog;
-import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.SyntaxHighlighting;
-import java.io.File;
+import com.sdm.ide.model.EntityModel;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -39,7 +38,8 @@ public class CodeEditorController implements Initializable {
 
     private CodeArea codeArea;
 
-    private File javaFile;
+    private EntityModel entity;
+
     @FXML
     private Label lblTitle;
     @FXML
@@ -47,12 +47,12 @@ public class CodeEditorController implements Initializable {
 
     private String openedText;
 
-    public void setFile(File javaFile) throws IOException {
-        this.javaFile = javaFile;
-        this.openedText = new String(Files.readAllBytes(javaFile.toPath()));
+    public void setEntity(EntityModel entity) throws IOException {
+        this.entity = entity;
+        this.openedText = entity.getCompiledObject().toString();
         codeArea.replaceText(0, 0, openedText);
 
-        lblTitle.setText(ProjectManager.getClassNameWithPackage(javaFile.getPath()));
+        lblTitle.setText(entity.getModuleName() + entity.getName());
     }
 
     @Override
@@ -84,7 +84,7 @@ public class CodeEditorController implements Initializable {
     @FXML
     private void saveSourceCode(ActionEvent event) {
         try {
-            Files.write(javaFile.toPath(), codeArea.getText().getBytes(), StandardOpenOption.WRITE);
+            Files.write(entity.getFile().toPath(), codeArea.getText().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
             this.openedText = codeArea.getText();
             AlertDialog.showInfo("Save successful.");
         } catch (IOException ex) {

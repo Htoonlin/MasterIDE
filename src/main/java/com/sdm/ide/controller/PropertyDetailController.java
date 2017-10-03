@@ -56,7 +56,7 @@ public class PropertyDetailController implements Initializable {
 
         this.currentProperty = property;
 
-        this.lblPropertyName.setText(property.getName());
+        this.lblPropertyName.textProperty().bind(property.nameProperty());
 
         try {
             this.txtPropertyName.textProperty().bindBidirectional(property.nameProperty());
@@ -270,6 +270,8 @@ public class PropertyDetailController implements Initializable {
                 previousModel.setPrimary(false);
             }
             this.currentEntity.setPrimaryProperty(this.currentProperty);
+        } else {
+            chkColumnPrimary.setSelected(false);
         }
     }
 }

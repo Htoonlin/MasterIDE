@@ -1,18 +1,12 @@
 package com.sdm.ide.helper;
 
 import com.sdm.ide.model.DatabaseModel;
-import com.sdm.ide.model.ModuleModel;
-import com.sdm.ide.model.ProjectTreeModel;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javafx.scene.control.TreeItem;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,7 +15,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -60,25 +53,43 @@ public class HibernateManager {
         return this.hibernateFile;
     }
 
-    public void loadDB(DatabaseModel model) throws URISyntaxException {
+    public DatabaseModel getDBInfo() throws URISyntaxException {
         NodeList properties = doc.getElementsByTagName(ELEMENT_PROP);
+        DatabaseModel model = new DatabaseModel();
         for (int i = 0; i < properties.getLength(); i++) {
-            String value = properties.item(i).getTextContent();
-            String name = properties.item(i).getAttributes()
-                    .getNamedItem(ATTR_NAME).getTextContent();
+            Element property = (Element) properties.item(i);
+            String name = property.getAttribute(ATTR_NAME);
             if (name.equalsIgnoreCase("hibernate.connection.username")) {
-                model.setUser(value);
+                model.setUser(property.getTextContent());
             } else if (name.equalsIgnoreCase("hibernate.connection.password")) {
-                model.setPassword(value);
+                model.setPassword(property.getTextContent());
             } else if (name.equalsIgnoreCase("hibernate.default_schema")) {
-                model.setSchema(value);
+                model.setSchema(property.getTextContent());
             } else if (name.equalsIgnoreCase("hibernate.connection.url")) {
-                URI url = new URI(value.substring(5));
+                URI url = new URI(property.getTextContent().substring(5));
                 String host = url.getHost();
                 if (url.getPort() > 0) {
                     host += ":" + url.getPort();
                 }
                 model.setHost(host);
+            }
+        }
+        return model;
+    }
+
+    public void setDBInfo(DatabaseModel model) {
+        NodeList properties = doc.getElementsByTagName(ELEMENT_PROP);
+        for (int i = 0; i < properties.getLength(); i++) {
+            Element property = (Element) properties.item(i);
+            String name = property.getAttribute(ATTR_NAME);
+            if (name.equalsIgnoreCase("hibernate.connection.username")) {
+                property.setTextContent(model.getUser());
+            } else if (name.equalsIgnoreCase("hibernate.connection.password")) {
+                property.setTextContent(model.getPassword());
+            } else if (name.equalsIgnoreCase("hibernate.default_schema")) {
+                property.setTextContent(model.getSchema());
+            } else if (name.equalsIgnoreCase("hibernate.connection.url")) {
+                property.setTextContent(model.getURL());
             }
         }
     }

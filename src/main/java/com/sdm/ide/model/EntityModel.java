@@ -2,6 +2,7 @@ package com.sdm.ide.model;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.sdm.core.Globalizer;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import java.io.File;
@@ -130,6 +131,28 @@ public final class EntityModel implements Serializable {
 
     public void addProperty(PropertyModel property) {
         this.properties.add(property);
+    }
+
+    public void removeProperty(PropertyModel property) {
+        //Remove Field
+        this.entityObject.getFieldByName(property.getName()).ifPresent(field -> {
+            this.entityObject.remove(field);
+        });
+
+        //Remove getter
+        String getter = "get" + Globalizer.capitalize(property.getName());
+        this.entityObject.getMethodsByName(getter).forEach(method -> {
+            this.entityObject.remove(method);
+        });
+
+        //Remove setter 
+        String setter = "set" + Globalizer.capitalize(property.getName());
+        this.entityObject.getMethodsByName(setter).forEach(method -> {
+            this.entityObject.remove(method);
+        });
+
+        //Remove Property
+        this.properties.remove(property);
     }
 
     public PropertyModel findProperty(String name) {

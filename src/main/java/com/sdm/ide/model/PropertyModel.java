@@ -130,7 +130,9 @@ public class PropertyModel implements Serializable {
 
     public void addValidation(AnnotationExpr annotation) {
         if (!this.validations.contains(annotation)) {
-            this.fieldObject.addAnnotation(annotation);
+            if (this.fieldObject != null) {
+                this.fieldObject.addAnnotation(annotation);
+            }
             this.validations.add(annotation);
         }
     }
