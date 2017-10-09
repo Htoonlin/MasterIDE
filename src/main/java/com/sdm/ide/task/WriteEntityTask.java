@@ -303,7 +303,7 @@ public class WriteEntityTask extends Task<Boolean> {
         field.addAnnotation(colAnnotation);
     }
 
-    private CompilationUnit newResourceFile(File resourceFile, String resource) throws IOException {
+    private CompilationUnit createNewResourceFile(String resource) throws IOException {
         this.showMessage("Creating new resource file.");
         CompilationUnit cu = new CompilationUnit();
         cu.setPackageDeclaration(entity.getModuleName() + ".resource");
@@ -336,7 +336,6 @@ public class WriteEntityTask extends Task<Boolean> {
         getDAO.setType("RestDAO");
         getDAO.setBody(this.createBody("return this.mainDAO;"));
 
-        Files.write(resourceFile.toPath(), cu.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         this.showMessage("Successfully created " + resource + ".java file.");
         return cu;
     }
@@ -349,7 +348,7 @@ public class WriteEntityTask extends Task<Boolean> {
                 + "resource" + File.separatorChar + resource + ".java");
         CompilationUnit cu;
         if (!resourceFile.exists() && resourceFile.createNewFile()) {
-            cu = this.newResourceFile(resourceFile, resource);
+            cu = this.createNewResourceFile(resource);
         } else {
             cu = JavaParser.parse(resourceFile);
         }
@@ -359,6 +358,11 @@ public class WriteEntityTask extends Task<Boolean> {
                 resourceObject.remove(annotation);
             });
             resourceObject.addSingleMemberAnnotation("Path", new StringLiteralExpr(entity.getResourcePath()));
+            try {
+                Files.write(resourceFile.toPath(), cu.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (IOException ex) {
+                this.showMessage(ex.getLocalizedMessage());
+            }
             this.showMessage("Updated resource path.");
         });
 

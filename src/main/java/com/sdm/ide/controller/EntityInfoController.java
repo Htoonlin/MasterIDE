@@ -18,28 +18,6 @@ public class EntityInfoController implements Initializable {
 
     private EntityModel currentEntity;
 
-    public void setEntity(EntityModel entity) {
-        if (entity != null) {
-
-            this.currentEntity = entity;
-
-            String title = entity.getModuleName() + ".entity." + entity.getName();
-            lblEntity.setText(title);
-
-            txtResourcePath.textProperty().bindBidirectional(entity.resourcePathProperty());
-            txtModule.textProperty().bindBidirectional(entity.moduleNameProperty());
-            txtEntity.textProperty().bindBidirectional(entity.entityNameProperty());
-            txtTable.textProperty().bindBidirectional(entity.tableNameProperty());
-            chkMappedWithDatabase.selectedProperty().bindBidirectional(entity.mappedWithDBProperty());
-            chkAuditable.selectedProperty().bindBidirectional(entity.auditableProperty());
-            chkDynamicUpdate.selectedProperty().bindBidirectional(entity.dynamicUpdateProperty());
-
-            Set<String> entityClasses = HibernateManager.getInstance().getEntities();
-            boolean isMapped = entityClasses.contains(title);
-            chkMappedWithDatabase.setSelected(isMapped);
-        }
-    }
-
     @FXML
     private TextField txtResourcePath;
 
@@ -66,6 +44,28 @@ public class EntityInfoController implements Initializable {
 
     @FXML
     private ScrollPane mainScrollPane;
+
+    public void setEntity(EntityModel entity) {
+        if (entity != null) {
+
+            this.currentEntity = entity;
+
+            String title = entity.getModuleName() + ".entity." + entity.getName();
+            lblEntity.setText(title);
+
+            txtResourcePath.textProperty().bindBidirectional(entity.resourcePathProperty());
+            txtModule.textProperty().bindBidirectional(entity.moduleNameProperty());
+            txtEntity.textProperty().bindBidirectional(entity.entityNameProperty());
+            txtTable.textProperty().bindBidirectional(entity.tableNameProperty());
+            chkMappedWithDatabase.selectedProperty().bindBidirectional(entity.mappedWithDBProperty());
+            chkAuditable.selectedProperty().bindBidirectional(entity.auditableProperty());
+            chkDynamicUpdate.selectedProperty().bindBidirectional(entity.dynamicUpdateProperty());
+
+            Set<String> entityClasses = HibernateManager.getInstance().getEntities();
+            boolean isMapped = entityClasses.contains(title);
+            chkMappedWithDatabase.setSelected(isMapped);
+        }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
