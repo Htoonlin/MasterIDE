@@ -173,11 +173,22 @@ public class WriteEntityTask extends Task<Boolean> {
     }
 
     private void createMyanmarFontGetterSetter(ClassOrInterfaceDeclaration entityObject, PropertyModel property) {
-        String methodName = "getMM" + Globalizer.capitalize(property.getName());
-        //Check getMMProperty
-        if (entityObject.getMethodsByName(methodName).isEmpty()) {
+        String getterName = "getMM" + Globalizer.capitalize(property.getName());
+        String setterName = "setMM" + Globalizer.capitalize(property.getName());
+
+        //Remove MMFont Getters
+        entityObject.getMethodsByName(getterName).forEach(method -> {
+            entityObject.remove(method);
+        });
+
+        //Remove MMFont Setters
+        entityObject.getMethodsByName(setterName).forEach(method -> {
+            entityObject.remove(method);
+        });
+
+        if (!property.isJsonIgnore() && property.isAllowMMFont()) {
             //Create getMMProperty
-            MethodDeclaration getter = entityObject.addMethod(methodName, Modifier.PUBLIC);
+            MethodDeclaration getter = entityObject.addMethod(getterName, Modifier.PUBLIC);
             getter.setType("Object");
             String code = "if (MyanmarFontManager.isMyanmar(this." + property.getName() + ")) {";
             code += "Map<String, String> output = new HashMap<>();";
@@ -190,15 +201,11 @@ public class WriteEntityTask extends Task<Boolean> {
             getter.createBody().addStatement(code);
             getter.addSingleMemberAnnotation("JsonGetter",
                     new StringLiteralExpr(Globalizer.camelToLowerUnderScore(property.getName())));
-        }
 
-        methodName = "setMM" + Globalizer.capitalize(property.getName());
-        //Check setMMProperty
-        if (entityObject.getMethodsByName(methodName).isEmpty()) {
             //Create setMMProperty
-            MethodDeclaration setter = entityObject.addMethod(methodName, Modifier.PUBLIC);
+            MethodDeclaration setter = entityObject.addMethod(setterName, Modifier.PUBLIC);
             setter.addParameter(property.getType(), property.getName());
-            String code = "if (MyanmarFontManager.isMyanmar(" + property.getName() + ") && MyanmarFontManager.isZawgyi(" + property.getName() + ")) {";
+            code = "if (MyanmarFontManager.isMyanmar(" + property.getName() + ") && MyanmarFontManager.isZawgyi(" + property.getName() + ")) {";
             code += "this." + property.getName() + " = MyanmarFontManager.toUnicode(" + property.getName() + ");";
             code += "} else {";
             code += "this." + property.getName() + " = " + property.getName() + ";";
@@ -308,9 +315,7 @@ public class WriteEntityTask extends Task<Boolean> {
             field.createSetter();
         }
 
-        if (!property.isJsonIgnore() && property.isAllowMMFont()) {
-            this.createMyanmarFontGetterSetter(entityObject, property);
-        }
+        this.createMyanmarFontGetterSetter(entityObject, property);
 
         this.showMessage("Successfully created : " + property.getName());
     }

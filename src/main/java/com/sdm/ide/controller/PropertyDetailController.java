@@ -89,6 +89,9 @@ public class PropertyDetailController implements Initializable {
                 this.lstAnnotations.setItems(validations);
             }
 
+            //Check MMFont 
+            this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
+
         } catch (Exception ex) {
             AlertDialog.showException(ex);
         }
@@ -247,6 +250,7 @@ public class PropertyDetailController implements Initializable {
         String javaType = cboPropertyType.getValue();
         //MM Font allow string type only
         chkPropertyMMFont.setVisible(javaType.equalsIgnoreCase("string"));
+        chkPropertyMMFont.setSelected(javaType.equalsIgnoreCase("string"));
 
         try {
             JSONObject linkTypes = TypeManager.getInstance().getLinkType(javaType);

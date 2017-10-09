@@ -244,9 +244,6 @@ public class ParseEntityTask extends Task<EntityModel> {
         property.setSearchable(false);
         property.setRequired(false);
 
-        //Check MMFont
-        property.setAllowMMFont(this.allowMMFont(property.getName()));
-
         JSONObject json = TypeManager.getInstance().getLinkType(property.getType());
         property.setInputType(json.getString("input"));
         property.setColumnDef(json.getString("db"));
@@ -287,12 +284,16 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void propertyAnalysis(PropertyModel property, NodeWithAnnotations node) {
+
+        //Check MMFont
+        property.setAllowMMFont(this.allowMMFont(property.getName()));
+
         //Load Primary Info
         if (node.isAnnotationPresent("Id") || node.isAnnotationPresent("GeneratedValue")) {
             property.setPrimary(true);
         }
 
-        if (node.isAnnotationPresent("JsonIgnore")) {
+        if (node.isAnnotationPresent("JsonIgnore") && !property.isAllowMMFont()) {
             property.setJsonIgnore(true);
         }
 
