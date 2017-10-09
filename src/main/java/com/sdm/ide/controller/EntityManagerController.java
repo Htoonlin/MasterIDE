@@ -180,7 +180,7 @@ public class EntityManagerController implements Initializable {
         task.setOnSucceeded(worker -> {
             dialog.close();
             if (task.getValue()) {
-                AlertDialog.showInfo("Save successful.");
+                this.loadEntity(this.currentEntity.getFile());
             } else {
                 AlertDialog.showWarning("Something wrong in code generation process.");
             }

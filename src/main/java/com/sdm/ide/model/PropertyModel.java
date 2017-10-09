@@ -59,6 +59,9 @@ public class PropertyModel implements Serializable {
     @FXColumn(width = 50)
     private BooleanProperty hideInGrid;
 
+    @FXColumn(width = 50)
+    private BooleanProperty allowMMFont;
+
     @FXColumn(visible = false)
     private BooleanProperty readOnly;
 
@@ -89,6 +92,7 @@ public class PropertyModel implements Serializable {
         this.primary = new SimpleBooleanProperty(false);
         this.required = new SimpleBooleanProperty(false);
         this.hideInGrid = new SimpleBooleanProperty(true);
+        this.allowMMFont = new SimpleBooleanProperty(false);
         this.readOnly = new SimpleBooleanProperty(false);
         this.auditable = new SimpleBooleanProperty(true);
         this.searchable = new SimpleBooleanProperty(false);
@@ -207,6 +211,18 @@ public class PropertyModel implements Serializable {
 
     public void setHideInGrid(final boolean hideInGrid) {
         this.hideInGridProperty().set(hideInGrid);
+    }
+
+    public boolean isAllowMMFont() {
+        return allowMMFont.get();
+    }
+
+    public void setAllowMMFont(boolean value) {
+        allowMMFont.set(value);
+    }
+
+    public BooleanProperty allowMMFontProperty() {
+        return allowMMFont;
     }
 
     public BooleanProperty readOnlyProperty() {

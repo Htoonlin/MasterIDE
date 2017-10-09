@@ -59,6 +59,7 @@ public final class EntityModel implements Serializable {
                 "javax.validation.constraints.*",
                 "com.fasterxml.jackson.annotation.*",
                 "org.hibernate.envers.*",
+                "com.sdm.core.util.MyanmarFontManager",
                 "java.io.Serializable",
                 "javax.ws.rs.core.UriBuilder",
                 "org.hibernate.annotations.Formula",
@@ -152,25 +153,26 @@ public final class EntityModel implements Serializable {
     }
 
     public void removeProperty(PropertyModel property) {
-        //Remove Field
-        this.entityObject.getFieldByName(property.getName()).ifPresent(field -> {
-            this.entityObject.remove(field);
-        });
-
-        //Remove getter
-        String getter = "get" + Globalizer.capitalize(property.getName());
-        this.entityObject.getMethodsByName(getter).forEach(method -> {
-            this.entityObject.remove(method);
-        });
-
-        //Remove setter 
-        String setter = "set" + Globalizer.capitalize(property.getName());
-        this.entityObject.getMethodsByName(setter).forEach(method -> {
-            this.entityObject.remove(method);
-        });
+        this.removeFieldFromEntityObject(property.getName());
 
         //Remove Property
         this.properties.remove(property);
+    }
+
+    public void removeFieldFromEntityObject(String propertyName) {
+        //Remove Field
+        this.entityObject.getFieldByName(propertyName).ifPresent(field -> {
+            this.entityObject.remove(field);
+        });
+
+        //Remove getter/setter and MMFontGetter/Setter
+        String[] methodPrefixs = {"get", "set", "getMM", "setMM"};
+        for (String prefix : methodPrefixs) {
+            String methodName = prefix + Globalizer.capitalize(propertyName);
+            this.entityObject.getMethodsByName(methodName).forEach(method -> {
+                this.entityObject.remove(method);
+            });
+        }
     }
 
     public PropertyModel findProperty(String name) {

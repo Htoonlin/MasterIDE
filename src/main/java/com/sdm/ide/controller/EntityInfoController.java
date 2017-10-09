@@ -84,6 +84,7 @@ public class EntityInfoController implements Initializable {
                 if (!ProjectManager.validJavaPackage(txtModule.getText())) {
                     AlertDialog.showWarning("Invalid module name <" + txtModule.getText() + ">.");
                     txtModule.setText("");
+                    txtModule.requestFocus();
                 }
             }
         });
@@ -94,6 +95,7 @@ public class EntityInfoController implements Initializable {
                 if (!ProjectManager.validTableName(txtTable.getText())) {
                     AlertDialog.showWarning("Invalid table name <" + txtTable.getText() + ">.");
                     txtTable.setText("");
+                    txtTable.requestFocus();
                 }
             }
         });

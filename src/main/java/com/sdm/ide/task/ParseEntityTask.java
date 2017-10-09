@@ -14,6 +14,7 @@ import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
+import com.sdm.core.Globalizer;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.helper.ValidationManager;
 import com.sdm.ide.model.EntityModel;
@@ -242,6 +243,10 @@ public class ParseEntityTask extends Task<EntityModel> {
         property.setJsonIgnore(false);
         property.setSearchable(false);
         property.setRequired(false);
+
+        //Check MMFont
+        property.setAllowMMFont(this.allowMMFont(property.getName()));
+
         JSONObject json = TypeManager.getInstance().getLinkType(property.getType());
         property.setInputType(json.getString("input"));
         property.setColumnDef(json.getString("db"));
@@ -259,8 +264,26 @@ public class ParseEntityTask extends Task<EntityModel> {
         if (property.isPrimary()) {
             this.entity.setPrimaryProperty(property);
         }
+
         property.setFieldObject(field);
         this.entity.addProperty(property);
+    }
+
+    /**
+     * It will look for getMMProperty() and setMMProperty()
+     *
+     * @param entityObject
+     * @param propertyName
+     * @return allowMMFont?
+     */
+    private boolean allowMMFont(String propertyName) {
+        String getterName = "getMM" + Globalizer.capitalize(propertyName);
+        String setterName = "setMM" + Globalizer.capitalize(propertyName);
+
+        ClassOrInterfaceDeclaration entityObject = this.entity.getEntityObject();
+
+        return (!entityObject.getMethodsByName(getterName).isEmpty()
+                && !entityObject.getMethodsByName(setterName).isEmpty());
     }
 
     private void propertyAnalysis(PropertyModel property, NodeWithAnnotations node) {

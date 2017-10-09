@@ -16,7 +16,6 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.sdm.core.Globalizer;
 import com.sdm.ide.helper.HibernateManager;
@@ -60,14 +59,6 @@ public class WriteEntityTask extends Task<Boolean> {
         } catch (InterruptedException ex) {
             updateMessage(message);
         }
-    }
-
-    private BlockStmt createBody(String... statements) {
-        BlockStmt body = new BlockStmt();
-        for (String statement : statements) {
-            body.addStatement(statement);
-        }
-        return body;
     }
 
     private void cleanEntityAnnotations(ClassOrInterfaceDeclaration entityObject) {
@@ -166,7 +157,9 @@ public class WriteEntityTask extends Task<Boolean> {
         String line1 = "String selfLink = UriBuilder.fromResource(" + resourceName + ".class).build().toString();";
         String line2 = "selfLink += \"/\" + this." + this.entity.getPrimaryProperty().getName() + " + \"/\";";
         String line3 = "return new LinkModel(selfLink);";
-        selfLink.setBody(this.createBody(line1, line2, line3));
+        selfLink.createBody().addStatement(line1)
+                .addStatement(line2)
+                .addStatement(line3);
 
         selfLink.addSingleMemberAnnotation("JsonGetter", new StringLiteralExpr("&detail_link"));
     }
@@ -177,6 +170,43 @@ public class WriteEntityTask extends Task<Boolean> {
         FieldDeclaration serialField = entityObject.addField("long", "serialVersionUID",
                 Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
         serialField.getVariable(0).setInitializer(serial + "L");
+    }
+
+    private void createMyanmarFontGetterSetter(ClassOrInterfaceDeclaration entityObject, PropertyModel property) {
+        String methodName = "getMM" + Globalizer.capitalize(property.getName());
+        //Check getMMProperty
+        if (entityObject.getMethodsByName(methodName).isEmpty()) {
+            //Create getMMProperty
+            MethodDeclaration getter = entityObject.addMethod(methodName, Modifier.PUBLIC);
+            getter.setType("Object");
+            String code = "if (MyanmarFontManager.isMyanmar(this." + property.getName() + ")) {";
+            code += "Map<String, String> output = new HashMap<>();";
+            code += "output.put(\"zg\", MyanmarFontManager.toZawgyi(this." + property.getName() + "));";
+            code += "output.put(\"uni\", this." + property.getName() + ");";
+            code += "return output;";
+            code += "} else {";
+            code += "return this." + property.getName() + ";";
+            code += "}";
+            getter.createBody().addStatement(code);
+            getter.addSingleMemberAnnotation("JsonGetter",
+                    new StringLiteralExpr(Globalizer.camelToLowerUnderScore(property.getName())));
+        }
+
+        methodName = "setMM" + Globalizer.capitalize(property.getName());
+        //Check setMMProperty
+        if (entityObject.getMethodsByName(methodName).isEmpty()) {
+            //Create setMMProperty
+            MethodDeclaration setter = entityObject.addMethod(methodName, Modifier.PUBLIC);
+            setter.addParameter(property.getType(), property.getName());
+            String code = "if (MyanmarFontManager.isMyanmar(" + property.getName() + ") && MyanmarFontManager.isZawgyi(" + property.getName() + ")) {";
+            code += "this." + property.getName() + " = MyanmarFontManager.toUnicode(" + property.getName() + ");";
+            code += "} else {";
+            code += "this." + property.getName() + " = " + property.getName() + ";";
+            code += "}";
+            setter.createBody().addStatement(code);
+            setter.addSingleMemberAnnotation("JsonSetter",
+                    new StringLiteralExpr(Globalizer.camelToLowerUnderScore(property.getName())));
+        }
     }
 
     private void removeAnnotation(ClassOrInterfaceDeclaration entityObject,
@@ -246,7 +276,7 @@ public class WriteEntityTask extends Task<Boolean> {
         }
 
         //Create JsonIgnore
-        if (property.isJsonIgnore()) {
+        if (property.isJsonIgnore() || property.isAllowMMFont()) {
             field.addMarkerAnnotation("JsonIgnore");
         }
 
@@ -276,6 +306,10 @@ public class WriteEntityTask extends Task<Boolean> {
         methodName = "set" + Globalizer.capitalize(property.getName());
         if (entityObject.getMethodsByName(methodName).isEmpty()) {
             field.createSetter();
+        }
+
+        if (!property.isJsonIgnore() && property.isAllowMMFont()) {
+            this.createMyanmarFontGetterSetter(entityObject, property);
         }
 
         this.showMessage("Successfully created : " + property.getName());
@@ -324,17 +358,17 @@ public class WriteEntityTask extends Task<Boolean> {
         MethodDeclaration getLogger = resourceObject.addMethod("getLogger", Modifier.PROTECTED);
         getLogger.addMarkerAnnotation("Override");
         getLogger.setType("Logger");
-        getLogger.setBody(this.createBody("return " + entity.getBaseName() + "Resource.LOG;"));
+        getLogger.createBody().addStatement("return " + entity.getBaseName() + "Resource.LOG;");
 
         resourceObject.addField(entity.getBaseName() + "DAO", "mainDAO", Modifier.PRIVATE);
         MethodDeclaration init = resourceObject.addMethod("init", Modifier.PRIVATE);
         init.addMarkerAnnotation("PostConstruct");
-        init.setBody(this.createBody("mainDAO = new " + entity.getBaseName() + "DAO(getUserId());"));
+        init.createBody().addStatement("mainDAO = new " + entity.getBaseName() + "DAO(getUserId());");
 
         MethodDeclaration getDAO = resourceObject.addMethod("getDAO", Modifier.PROTECTED);
         getDAO.addMarkerAnnotation("Override");
         getDAO.setType("RestDAO");
-        getDAO.setBody(this.createBody("return this.mainDAO;"));
+        getDAO.createBody().addStatement("return this.mainDAO;");
 
         this.showMessage("Successfully created " + resource + ".java file.");
         return cu;

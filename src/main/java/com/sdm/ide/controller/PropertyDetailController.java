@@ -41,6 +41,11 @@ public class PropertyDetailController implements Initializable {
 
     private PropertyModel currentProperty;
 
+    private String prevName;
+
+    @FXML
+    private CheckBox chkPropertyMMFont;
+
     public void setProperty(EntityModel entity, PropertyModel property) {
         if (property == null) {
             AlertDialog.showWarning("Invalid property.");
@@ -55,8 +60,9 @@ public class PropertyDetailController implements Initializable {
         this.currentEntity = entity;
 
         this.currentProperty = property;
+        this.prevName = property.getName();
 
-        this.lblPropertyName.textProperty().bind(property.nameProperty());
+        this.lblPropertyName.textProperty().bindBidirectional(property.nameProperty());
 
         try {
             this.txtPropertyName.textProperty().bindBidirectional(property.nameProperty());
@@ -64,6 +70,7 @@ public class PropertyDetailController implements Initializable {
             this.chkPropertyAuditable.selectedProperty().bindBidirectional(property.auditableProperty());
             this.chkPropertySearchable.selectedProperty().bindBidirectional(property.searchableProperty());
             this.chkPropertyJsonIgnore.selectedProperty().bindBidirectional(property.jsonIgnoreProperty());
+            this.chkPropertyMMFont.selectedProperty().bindBidirectional(property.allowMMFontProperty());
 
             this.txtColumnName.textProperty().bindBidirectional(property.columnNameProperty());
             this.txtColumnDef.textProperty().bindBidirectional(property.columnDefProperty());
@@ -172,12 +179,6 @@ public class PropertyDetailController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         mainScrollPane.setFitToWidth(true);
-        this.txtPropertyName.textProperty().addListener((obs, oldValue, newValue) -> {
-            if (!oldValue.equals(newValue)) {
-                txtColumnName.setText(newValue);
-                txtUILabel.setText(newValue);
-            }
-        });
 
         try {
             cboUIInputType.setItems(TypeManager.getInstance().getInputTypes());
@@ -188,21 +189,27 @@ public class PropertyDetailController implements Initializable {
 
         this.txtColumnName.focusedProperty().addListener((obs, oldValue, newValue) -> {
             if (!newValue) {
-                if (!newValue) {
-                    if (!ProjectManager.validColumnName(txtColumnName.getText())) {
-                        AlertDialog.showWarning("Invalid column name <" + txtColumnName.getText() + ">.");
-                        txtColumnName.setText("");
-                    }
+                if (!ProjectManager.validColumnName(txtColumnName.getText())) {
+                    AlertDialog.showWarning("Invalid column name <" + txtColumnName.getText() + ">.");
+                    txtColumnName.setText(oldValue.toString());
+                    txtColumnName.requestFocus();
                 }
             }
         });
 
         this.txtPropertyName.focusedProperty().addListener((obs, oldValue, newValue) -> {
-            if (!newValue) {
-                if (!newValue) {
-                    if (!ProjectManager.validJavaProperty(txtPropertyName.getText())) {
-                        AlertDialog.showWarning("Invalid property name <" + txtPropertyName.getText() + ">.");
-                        txtPropertyName.setText("");
+            if (!newValue && !txtPropertyName.getText().equals(prevName)) {
+                if (!ProjectManager.validJavaProperty(txtPropertyName.getText())) {
+                    AlertDialog.showWarning("Invalid property name <" + txtPropertyName.getText() + ">.");
+                    txtPropertyName.setText(prevName);
+                    txtPropertyName.requestFocus();
+                } else {
+                    Optional<ButtonType> result = AlertDialog.showQuestion("It will remove old property infos. Do you want to continue?");
+                    if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+                        prevName = txtPropertyName.getText();
+                        this.currentEntity.removeFieldFromEntityObject(currentProperty.getName());
+                    } else {
+                        txtPropertyName.setText(prevName);
                     }
                 }
             }
@@ -238,6 +245,9 @@ public class PropertyDetailController implements Initializable {
     @FXML
     void changePropertyType(ActionEvent event) {
         String javaType = cboPropertyType.getValue();
+        //MM Font allow string type only
+        chkPropertyMMFont.setVisible(javaType.equalsIgnoreCase("string"));
+
         try {
             JSONObject linkTypes = TypeManager.getInstance().getLinkType(javaType);
             txtColumnDef.setText(linkTypes.getString("db"));
