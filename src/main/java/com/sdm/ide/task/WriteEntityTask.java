@@ -151,7 +151,7 @@ public class WriteEntityTask extends Task<Boolean> {
         comment = comment.replaceAll("\\n.*(@Author|@Since)[^\\n]*", "");
         comment += "\n@Author " + System.getProperty("user.name");
         comment += "\n@Since " + Globalizer.getDateString("yyyy-MM-dd HH:mm:ss", new Date()) + "\n";
-        entityObject.setComment(new JavadocComment(comment));
+        entityObject.setJavadocComment(comment);
     }
 
     private void writeSearchFormula(FieldDeclaration searchField) {
