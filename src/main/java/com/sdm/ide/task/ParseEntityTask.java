@@ -245,7 +245,7 @@ public class ParseEntityTask extends Task<EntityModel> {
 
         //Load Comment
         field.getJavadoc().ifPresent(comment -> {
-            property.setDescription(comment.toText());
+            property.setDescription(comment.getDescription().toText());
         });
 
         //Init default property values
