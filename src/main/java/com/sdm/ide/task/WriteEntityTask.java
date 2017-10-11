@@ -12,14 +12,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.Comment;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.javadoc.Javadoc;
+import com.github.javaparser.javadoc.description.JavadocDescription;
 import com.sdm.core.Globalizer;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ValidationManager;
@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javafx.concurrent.Task;
 import javax.xml.transform.TransformerException;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -101,7 +102,7 @@ public class WriteEntityTask extends Task<Boolean> {
             this.cleanEntityAnnotations(entityObject);
         }
         //Write entity comment
-        this.writeEntityComment(entityObject);
+        this.writeComment(entityObject, this.entity.getDescription(), 0);
 
         //Add Auditable
         if (this.entity.isAuditable()) {
@@ -142,16 +143,15 @@ public class WriteEntityTask extends Task<Boolean> {
         showMessage("Created blank entity");
     }
 
-    private void writeEntityComment(ClassOrInterfaceDeclaration entityObject) {
-        //Check and clean comment
-        String comment = "\n";
-        if (this.entity.getDescription().length() > 0) {
-            comment += this.entity.getDescription();
+    private void writeComment(NodeWithJavadoc node, String desc, int indentSpace) {
+        Javadoc comment = new Javadoc(JavadocDescription.parseText(desc));
+        comment.addBlockTag("Author", System.getProperty("user.name"));
+        comment.addBlockTag("Since", Globalizer.getDateString("yyyy-MM-dd HH:mm:ss", new Date()));
+        if (indentSpace > 0) {
+            node.setJavadocComment(StringUtils.repeat(" ", indentSpace), comment);
+        } else {
+            node.setJavadocComment("", comment);
         }
-        comment = comment.replaceAll("\\n.*(@Author|@Since)[^\\n]*", "");
-        comment += "\n@Author " + System.getProperty("user.name");
-        comment += "\n@Since " + Globalizer.getDateString("yyyy-MM-dd HH:mm:ss", new Date()) + "\n";
-        entityObject.setJavadocComment(comment);
     }
 
     private void writeSearchFormula(FieldDeclaration searchField) {
@@ -282,7 +282,7 @@ public class WriteEntityTask extends Task<Boolean> {
         }
 
         //Write comment
-        field.setJavadocComment("\n" + property.getDescription() + "\n");
+        this.writeComment(field, property.getDescription(), 4);
 
         //Is Primary
         if (property.isPrimary()) {

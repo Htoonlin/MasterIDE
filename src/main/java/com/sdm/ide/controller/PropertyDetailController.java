@@ -96,7 +96,7 @@ public class PropertyDetailController implements Initializable {
 
             //Check MMFont 
             this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
-
+            this.txtPropertyName.requestFocus();
         } catch (Exception ex) {
             AlertDialog.showException(ex);
         }
