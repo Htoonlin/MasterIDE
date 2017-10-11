@@ -32,6 +32,20 @@ public class PropertyModel implements Serializable {
 
     @FXColumn(visible = false)
     private BooleanProperty jsonIgnore;
+    private final StringProperty description;
+
+    public String getDescription() {
+        return description.get();
+    }
+
+    public void setDescription(String value) {
+        description.set(value);
+    }
+
+    public StringProperty descriptionProperty() {
+        return description;
+    }
+
 
     /* Database */
     @FXColumn(label = "DB Column", width = 120)
@@ -73,25 +87,29 @@ public class PropertyModel implements Serializable {
 
     private NodeList<AnnotationExpr> validations;
 
+    private boolean systemGenerated;
+
     public PropertyModel(int index) {
         this();
         this.name = new SimpleStringProperty("prop" + index);
         this.label = new SimpleStringProperty("Property " + index);
         this.columnName = new SimpleStringProperty("col" + index);
         this.index = new SimpleIntegerProperty(index);
+        this.systemGenerated = true;
     }
 
     public PropertyModel() {
         this.name = new SimpleStringProperty("");
         this.label = new SimpleStringProperty("");
         this.type = new SimpleStringProperty("String");
+        this.description = new SimpleStringProperty("");
         this.columnName = new SimpleStringProperty("");
         this.columnDef = new SimpleStringProperty("VARCHAR(255)");
         this.inputType = new SimpleStringProperty("text");
         this.index = new SimpleIntegerProperty();
         this.primary = new SimpleBooleanProperty(false);
         this.required = new SimpleBooleanProperty(false);
-        this.hideInGrid = new SimpleBooleanProperty(true);
+        this.hideInGrid = new SimpleBooleanProperty(false);
         this.allowMMFont = new SimpleBooleanProperty(false);
         this.readOnly = new SimpleBooleanProperty(false);
         this.auditable = new SimpleBooleanProperty(true);
@@ -319,6 +337,14 @@ public class PropertyModel implements Serializable {
 
     public final void setColumnDef(final String columnDef) {
         this.columnDefProperty().set(columnDef);
+    }
+
+    public boolean isSystemGenerated() {
+        return systemGenerated;
+    }
+
+    public void setSystemGenerated(boolean systemGenerated) {
+        this.systemGenerated = systemGenerated;
     }
 
     @Override

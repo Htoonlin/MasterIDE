@@ -12,6 +12,9 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.comments.BlockComment;
+import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
@@ -36,6 +39,7 @@ import javax.xml.transform.TransformerException;
 /**
  *
  * @author htoonlin
+ *
  */
 public class WriteEntityTask extends Task<Boolean> {
 
@@ -96,6 +100,8 @@ public class WriteEntityTask extends Task<Boolean> {
         } else {
             this.cleanEntityAnnotations(entityObject);
         }
+        //Write entity comment
+        this.writeEntityComment(entityObject);
 
         //Add Auditable
         if (this.entity.isAuditable()) {
@@ -136,7 +142,19 @@ public class WriteEntityTask extends Task<Boolean> {
         showMessage("Created blank entity");
     }
 
-    private void addSearchFormula(FieldDeclaration searchField) {
+    private void writeEntityComment(ClassOrInterfaceDeclaration entityObject) {
+        //Check and clean comment
+        String comment = "\n";
+        if (this.entity.getDescription().length() > 0) {
+            comment += this.entity.getDescription();
+        }
+        comment = comment.replaceAll("\\n.*(@Author|@Since)[^\\n]*", "");
+        comment += "\n@Author " + System.getProperty("user.name");
+        comment += "\n@Since " + Globalizer.getDateString("yyyy-MM-dd HH:mm:ss", new Date()) + "\n";
+        entityObject.setComment(new JavadocComment(comment));
+    }
+
+    private void writeSearchFormula(FieldDeclaration searchField) {
         this.showMessage("Creating search property.");
 
         searchField.getAnnotationByName("Formula").ifPresent(oldFormula -> searchField.remove(oldFormula));
@@ -149,7 +167,7 @@ public class WriteEntityTask extends Task<Boolean> {
         searchField.addAnnotation(formulaAnnotation);
     }
 
-    private void createSelfLink(ClassOrInterfaceDeclaration entityObject) {
+    private void writeSelfLink(ClassOrInterfaceDeclaration entityObject) {
         MethodDeclaration selfLink = entityObject.addMethod("getSelfLink", Modifier.PUBLIC);
         selfLink.setType("LinkModel");
 
@@ -172,7 +190,7 @@ public class WriteEntityTask extends Task<Boolean> {
         serialField.getVariable(0).setInitializer(serial + "L");
     }
 
-    private void createMyanmarFontGetterSetter(ClassOrInterfaceDeclaration entityObject, PropertyModel property) {
+    private void writeMyanmarFontGetterSetter(ClassOrInterfaceDeclaration entityObject, PropertyModel property) {
         String getterName = "getMM" + Globalizer.capitalize(property.getName());
         String setterName = "setMM" + Globalizer.capitalize(property.getName());
 
@@ -242,7 +260,7 @@ public class WriteEntityTask extends Task<Boolean> {
         });
     }
 
-    private void createProperty(ClassOrInterfaceDeclaration entityObject, PropertyModel property) throws Exception {
+    private void writeProperty(ClassOrInterfaceDeclaration entityObject, PropertyModel property) throws Exception {
         //Clean processable annotations
         this.showMessage("Clean processable annotations.");
         for (String anno : this.processAnnotations) {
@@ -262,6 +280,9 @@ public class WriteEntityTask extends Task<Boolean> {
         if (field == null) {
             field = entityObject.addField(property.getType(), property.getName(), Modifier.PRIVATE);
         }
+
+        //Write comment
+        field.setJavadocComment("\n" + property.getDescription() + "\n");
 
         //Is Primary
         if (property.isPrimary()) {
@@ -293,10 +314,10 @@ public class WriteEntityTask extends Task<Boolean> {
         }
 
         //Create @UIStructure
-        this.createUIAnnotation(field, property);
+        this.writeUIAnnotation(field, property);
 
         //Create @Column
-        this.createColumnAnnotation(field, property);
+        this.writeColumnAnnotation(field, property);
 
         //Check search field
         if (property.isSearchable()) {
@@ -315,12 +336,12 @@ public class WriteEntityTask extends Task<Boolean> {
             field.createSetter();
         }
 
-        this.createMyanmarFontGetterSetter(entityObject, property);
+        this.writeMyanmarFontGetterSetter(entityObject, property);
 
         this.showMessage("Successfully created : " + property.getName());
     }
 
-    private void createUIAnnotation(FieldDeclaration field, PropertyModel property) {
+    private void writeUIAnnotation(FieldDeclaration field, PropertyModel property) {
         NormalAnnotationExpr uiAnnotation = new NormalAnnotationExpr();
         uiAnnotation.setName("UIStructure");
         uiAnnotation.addPair("order", Integer.toString(property.getIndex()));
@@ -332,7 +353,7 @@ public class WriteEntityTask extends Task<Boolean> {
         field.addAnnotation(uiAnnotation);
     }
 
-    private void createColumnAnnotation(FieldDeclaration field, PropertyModel property) {
+    private void writeColumnAnnotation(FieldDeclaration field, PropertyModel property) {
         NormalAnnotationExpr colAnnotation = new NormalAnnotationExpr();
         colAnnotation.setName("Column");
         colAnnotation.addPair("name", "\"" + property.getColumnName() + "\"");
@@ -342,7 +363,7 @@ public class WriteEntityTask extends Task<Boolean> {
         field.addAnnotation(colAnnotation);
     }
 
-    private CompilationUnit createNewResourceFile(String resource) throws IOException {
+    private CompilationUnit writeNewResourceFile(String resource) throws IOException {
         this.showMessage("Creating new resource file.");
         CompilationUnit cu = new CompilationUnit();
         cu.setPackageDeclaration(entity.getModuleName() + ".resource");
@@ -387,7 +408,7 @@ public class WriteEntityTask extends Task<Boolean> {
                 + "resource" + File.separatorChar + resource + ".java");
         CompilationUnit cu;
         if (!resourceFile.exists() && resourceFile.createNewFile()) {
-            cu = this.createNewResourceFile(resource);
+            cu = this.writeNewResourceFile(resource);
         } else {
             cu = JavaParser.parse(resourceFile);
         }
@@ -469,7 +490,7 @@ public class WriteEntityTask extends Task<Boolean> {
         //Add properties to entity
         ClassOrInterfaceDeclaration entityObject = this.entity.getEntityObject();
         for (PropertyModel property : this.entity.getProperties()) {
-            this.createProperty(entityObject, property);
+            this.writeProperty(entityObject, property);
         }
 
         //Add Search Field 
@@ -481,7 +502,7 @@ public class WriteEntityTask extends Task<Boolean> {
             //Add @NotAudited
             searchField.addMarkerAnnotation("NotAudited");
 
-            this.addSearchFormula(searchField);
+            this.writeSearchFormula(searchField);
             if (entityObject.getMethodsByName("getSearch").isEmpty()) {
                 searchField.createGetter();
             }
@@ -489,12 +510,12 @@ public class WriteEntityTask extends Task<Boolean> {
                 searchField.createSetter();
             }
         } else {
-            entityObject.getFieldByName("search").ifPresent(searchField -> this.addSearchFormula(searchField));
+            entityObject.getFieldByName("search").ifPresent(searchField -> this.writeSearchFormula(searchField));
         }
 
         //Add Self Link to entity
         if (entityObject.getMethodsByName("getSelfLink").isEmpty()) {
-            this.createSelfLink(entityObject);
+            this.writeSelfLink(entityObject);
         }
 
         //Write Entity File

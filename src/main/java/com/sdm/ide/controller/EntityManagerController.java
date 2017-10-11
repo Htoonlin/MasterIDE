@@ -95,7 +95,7 @@ public class EntityManagerController implements Initializable {
                 dialog.start(task);
                 task.setOnSucceeded((event) -> {
                     currentEntity = task.getValue();
-                    TableHelper.generateColumns(PropertyModel.class, propertyTable);
+                    TableHelper.generateColumns(PropertyModel.class, propertyTable);                    
                     propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
                     propertyTable.getColumns().forEach(col -> {
                         if (col.getText().equalsIgnoreCase("index")) {

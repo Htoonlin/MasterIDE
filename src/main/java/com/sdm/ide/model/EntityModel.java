@@ -29,6 +29,7 @@ public final class EntityModel implements Serializable {
     private final BooleanProperty auditable;
     private final BooleanProperty dynamicUpdate;
     private final BooleanProperty mappedWithDB;
+    private final StringProperty description;
 
     //Properties Info
     private Set<String> searchFields;
@@ -50,6 +51,7 @@ public final class EntityModel implements Serializable {
         this.auditable = new SimpleBooleanProperty(false);
         this.dynamicUpdate = new SimpleBooleanProperty(false);
         this.mappedWithDB = new SimpleBooleanProperty(true);
+        this.description = new SimpleStringProperty("");
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
         this.importedObjects = new HashSet<>(Arrays.asList(
@@ -322,6 +324,18 @@ public final class EntityModel implements Serializable {
             }
         }
         this.importedObjects.add(importedObject);
+    }
+
+    public String getDescription() {
+        return description.get();
+    }
+
+    public void setDescription(String value) {
+        description.set(value);
+    }
+
+    public StringProperty descriptionProperty() {
+        return description;
     }
 
     @Override

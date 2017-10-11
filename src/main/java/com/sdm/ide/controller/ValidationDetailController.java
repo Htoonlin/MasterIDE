@@ -27,8 +27,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javax.rmi.CORBA.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import sun.text.normalizer.Utility;
 
 public class ValidationDetailController implements Initializable {
 
@@ -108,7 +110,7 @@ public class ValidationDetailController implements Initializable {
                     if (value.matches("([0-9]+)")) {
                         pair.setValue(new IntegerLiteralExpr(value));
                     } else {
-                        pair.setValue(new StringLiteralExpr(value));
+                        pair.setValue(new StringLiteralExpr(Utility.escape(value)));
                     }
                     pairs.add(pair);
                 }

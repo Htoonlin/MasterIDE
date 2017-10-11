@@ -1,6 +1,7 @@
 package com.sdm.ide.controller;
 
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.sdm.core.Globalizer;
 import com.sdm.ide.component.AlertDialog;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
@@ -23,6 +24,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -45,6 +47,8 @@ public class PropertyDetailController implements Initializable {
 
     @FXML
     private CheckBox chkPropertyMMFont;
+    @FXML
+    private TextArea txtDescription;
 
     public void setProperty(EntityModel entity, PropertyModel property) {
         if (property == null) {
@@ -71,6 +75,7 @@ public class PropertyDetailController implements Initializable {
             this.chkPropertySearchable.selectedProperty().bindBidirectional(property.searchableProperty());
             this.chkPropertyJsonIgnore.selectedProperty().bindBidirectional(property.jsonIgnoreProperty());
             this.chkPropertyMMFont.selectedProperty().bindBidirectional(property.allowMMFontProperty());
+            this.txtDescription.textProperty().bindBidirectional(property.descriptionProperty());
 
             this.txtColumnName.textProperty().bindBidirectional(property.columnNameProperty());
             this.txtColumnDef.textProperty().bindBidirectional(property.columnDefProperty());
@@ -161,6 +166,7 @@ public class PropertyDetailController implements Initializable {
             dialogStage.initStyle(StageStyle.UTILITY);
             dialogStage.setResizable(false);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.setAlwaysOnTop(true);
             dialogStage.setScene(dialogScene);
             dialogStage.show();
 
@@ -194,7 +200,7 @@ public class PropertyDetailController implements Initializable {
             if (!newValue) {
                 if (!ProjectManager.validColumnName(txtColumnName.getText())) {
                     AlertDialog.showWarning("Invalid column name <" + txtColumnName.getText() + ">.");
-                    txtColumnName.setText(oldValue.toString());
+                    txtColumnName.setText("");
                     txtColumnName.requestFocus();
                 }
             }
@@ -206,7 +212,7 @@ public class PropertyDetailController implements Initializable {
                     AlertDialog.showWarning("Invalid property name <" + txtPropertyName.getText() + ">.");
                     txtPropertyName.setText(prevName);
                     txtPropertyName.requestFocus();
-                } else {
+                } else if (!this.currentProperty.isSystemGenerated()) {
                     Optional<ButtonType> result = AlertDialog.showQuestion("It will remove old property infos. Do you want to continue?");
                     if (result.isPresent() && result.get().equals(ButtonType.YES)) {
                         prevName = txtPropertyName.getText();
@@ -214,6 +220,11 @@ public class PropertyDetailController implements Initializable {
                     } else {
                         txtPropertyName.setText(prevName);
                     }
+                } else {
+                    prevName = txtPropertyName.getText();
+                    this.currentProperty.setSystemGenerated(false);
+                    this.currentProperty.setColumnName(txtPropertyName.getText());
+                    this.currentProperty.setLabel(Globalizer.capitalize(txtPropertyName.getText()));
                 }
             }
         });
@@ -277,15 +288,20 @@ public class PropertyDetailController implements Initializable {
             return;
         }
 
-        Optional<ButtonType> result = AlertDialog.showQuestion("It will remove other primary field. Do you want to continue?");
-        if (result.isPresent() && result.get().equals(ButtonType.YES)) {
-            PropertyModel previousModel = this.currentEntity.getPrimaryProperty();
-            if (previousModel != null) {
-                previousModel.setPrimary(false);
+        if (this.currentEntity.getPrimaryProperty() != null) {
+            Optional<ButtonType> result = AlertDialog.showQuestion("It will remove other primary field. Do you want to continue?");
+            if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+                PropertyModel previousModel = this.currentEntity.getPrimaryProperty();
+                if (previousModel != null) {
+                    previousModel.setPrimary(false);
+                }
+                this.currentEntity.setPrimaryProperty(this.currentProperty);
+            } else {
+                chkColumnPrimary.setSelected(false);
             }
-            this.currentEntity.setPrimaryProperty(this.currentProperty);
         } else {
-            chkColumnPrimary.setSelected(false);
+            this.currentEntity.setPrimaryProperty(this.currentProperty);
         }
+
     }
 }

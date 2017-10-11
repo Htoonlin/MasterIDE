@@ -45,6 +45,12 @@ public class HibernateManager {
     public void load(File hibernateFile) throws ParserConfigurationException, SAXException, IOException {
         this.hibernateFile = hibernateFile;
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        docFactory.setValidating(false);
+        docFactory.setNamespaceAware(true);
+        docFactory.setFeature("http://xml.org/sax/features/namespaces", false);
+        docFactory.setFeature("http://xml.org/sax/features/validation", false);
+        docFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+        docFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
         this.doc = docBuilder.parse(hibernateFile);
     }

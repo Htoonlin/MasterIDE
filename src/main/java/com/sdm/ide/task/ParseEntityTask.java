@@ -90,6 +90,11 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void loadEntityInfo(ClassOrInterfaceDeclaration entityObject) {
+        //Load Comment
+        entityObject.getComment().ifPresent(comment -> {
+            this.entity.setDescription(comment.getContent().replaceAll("\\n.*(@Author|@Since)[^\\n]*", "").trim());
+        });
+
         //Load Auditable
         if (entityObject.isAnnotationPresent("Audited")) {
             showMessage("Auditable : true");
@@ -237,6 +242,11 @@ public class ParseEntityTask extends Task<EntityModel> {
         //Load property info
         property.setName(field.getVariable(0).getNameAsString());
         property.setType(field.getElementType().asString());
+
+        //Load Comment
+        field.getComment().ifPresent(comment -> {
+            property.setDescription(comment.getContent().trim());
+        });
 
         //Init default property values
         property.setAuditable(true);

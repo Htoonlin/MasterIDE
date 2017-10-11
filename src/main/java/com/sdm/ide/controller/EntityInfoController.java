@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 public class EntityInfoController implements Initializable {
@@ -44,6 +45,8 @@ public class EntityInfoController implements Initializable {
 
     @FXML
     private ScrollPane mainScrollPane;
+    @FXML
+    private TextArea txtDescription;
 
     public void setEntity(EntityModel entity) {
         if (entity != null) {
@@ -60,6 +63,7 @@ public class EntityInfoController implements Initializable {
             chkMappedWithDatabase.selectedProperty().bindBidirectional(entity.mappedWithDBProperty());
             chkAuditable.selectedProperty().bindBidirectional(entity.auditableProperty());
             chkDynamicUpdate.selectedProperty().bindBidirectional(entity.dynamicUpdateProperty());
+            txtDescription.textProperty().bindBidirectional(entity.descriptionProperty());
 
             Set<String> entityClasses = HibernateManager.getInstance().getEntities();
             boolean isMapped = entityClasses.contains(title);
