@@ -167,7 +167,7 @@ public class ParseEntityTask extends Task<EntityModel> {
             // Check properties must have exists UIStructure || Column annotation.
             boolean hasUI = field.isAnnotationPresent("UIStructure");
             boolean hasColumn = field.isAnnotationPresent("Column");
-            if (hasUI && hasColumn) {
+            if (hasUI || hasColumn) {
                 String fieldName = field.getVariable(0).getNameAsString();
                 showMessage("Found a property : " + fieldName);
                 try {
