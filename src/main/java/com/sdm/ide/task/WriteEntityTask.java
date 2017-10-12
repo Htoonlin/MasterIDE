@@ -16,7 +16,6 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.description.JavadocDescription;
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.Set;
 import javafx.concurrent.Task;
 import javax.xml.transform.TransformerException;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -102,7 +100,7 @@ public class WriteEntityTask extends Task<Boolean> {
             this.cleanEntityAnnotations(entityObject);
         }
         //Write entity comment
-        this.writeComment(entityObject, this.entity.getDescription(), 0);
+        this.writeEntityComment(entityObject);
 
         //Add Auditable
         if (this.entity.isAuditable()) {
@@ -143,15 +141,11 @@ public class WriteEntityTask extends Task<Boolean> {
         showMessage("Created blank entity");
     }
 
-    private void writeComment(NodeWithJavadoc node, String desc, int indentSpace) {
-        Javadoc comment = new Javadoc(JavadocDescription.parseText(desc));
+    private void writeEntityComment(ClassOrInterfaceDeclaration entityObject) {
+        Javadoc comment = new Javadoc(JavadocDescription.parseText(this.entity.getDescription()));
         comment.addBlockTag("Author", System.getProperty("user.name"));
         comment.addBlockTag("Since", Globalizer.getDateString("yyyy-MM-dd HH:mm:ss", new Date()));
-        if (indentSpace > 0) {
-            node.setJavadocComment(StringUtils.repeat(" ", indentSpace), comment);
-        } else {
-            node.setJavadocComment("", comment);
-        }
+        entityObject.setJavadocComment("", comment);
     }
 
     private void writeSearchFormula(FieldDeclaration searchField) {
@@ -282,7 +276,10 @@ public class WriteEntityTask extends Task<Boolean> {
         }
 
         //Write comment
-        this.writeComment(field, property.getDescription(), 4);
+        if (property.getDescription().trim().length() > 0) {
+            Javadoc comment = new Javadoc(JavadocDescription.parseText(property.getDescription().trim()));
+            field.setJavadocComment("    ", comment);
+        }
 
         //Is Primary
         if (property.isPrimary()) {
