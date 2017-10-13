@@ -6,6 +6,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,6 +19,8 @@ import javafx.beans.property.StringProperty;
 public class PropertyModel implements Serializable {
 
     private static final long serialVersionUID = 1027044065751863361L;
+
+    public static final String[] RELATIONS = {"None", "OneToOne", "OneToMany", "ManyToOne", "ManyToMany"};
 
     /* Java Properties */
     @FXColumn(width = 120)
@@ -32,20 +37,8 @@ public class PropertyModel implements Serializable {
 
     @FXColumn(visible = false)
     private BooleanProperty jsonIgnore;
+
     private final StringProperty description;
-
-    public String getDescription() {
-        return description.get();
-    }
-
-    public void setDescription(String value) {
-        description.set(value);
-    }
-
-    public StringProperty descriptionProperty() {
-        return description;
-    }
-
 
     /* Database */
     @FXColumn(label = "DB Column", width = 120)
@@ -85,7 +78,41 @@ public class PropertyModel implements Serializable {
 
     private MethodDeclaration setter;
 
-    private NodeList<AnnotationExpr> validations;
+    private final StringProperty relationSource = new SimpleStringProperty();
+
+    public boolean hasRelation() {
+        return !this.getRelationType().equalsIgnoreCase("None");
+    }
+
+    public String getRelationSource() {
+        return relationSource.get();
+    }
+
+    public void setRelationSource(String value) {
+        relationSource.set(value);
+    }
+
+    public StringProperty relationSourceProperty() {
+        return relationSource;
+    }
+    private final StringProperty relationType = new SimpleStringProperty("None");
+
+    public String getRelationType() {
+        return relationType.get();
+    }
+
+    public void setRelationType(String value) {
+        relationType.set(value);
+    }
+
+    public StringProperty relationTypeProperty() {
+        return relationType;
+    }
+
+    /**
+     * Field Validations
+     */
+    private Set<AnnotationExpr> validations;
 
     private boolean systemGenerated;
 
@@ -115,7 +142,7 @@ public class PropertyModel implements Serializable {
         this.auditable = new SimpleBooleanProperty(true);
         this.searchable = new SimpleBooleanProperty(false);
         this.jsonIgnore = new SimpleBooleanProperty(false);
-        this.validations = new NodeList<>();
+        this.validations = new HashSet<>();
     }
 
     public FieldDeclaration getFieldObject() {
@@ -142,16 +169,16 @@ public class PropertyModel implements Serializable {
         this.setter = setter;
     }
 
-    public NodeList<AnnotationExpr> getValidations() {
+    public Set<AnnotationExpr> getValidations() {
         return validations;
     }
 
-    public void setValidations(NodeList<AnnotationExpr> validations) {
+    public void setValidations(Set<AnnotationExpr> validations) {
         this.validations = validations;
     }
 
     public void addValidation(AnnotationExpr annotation) {
-        if (!this.validations.contains(annotation)) {
+        if (this.validations.contains(annotation)) {
             if (this.fieldObject != null) {
                 this.fieldObject.addAnnotation(annotation);
             }
@@ -169,6 +196,18 @@ public class PropertyModel implements Serializable {
 
     public void setName(final String name) {
         this.nameProperty().set(name);
+    }
+
+    public String getDescription() {
+        return description.get();
+    }
+
+    public void setDescription(String value) {
+        description.set(value);
+    }
+
+    public StringProperty descriptionProperty() {
+        return description;
     }
 
     public StringProperty labelProperty() {

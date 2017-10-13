@@ -34,6 +34,8 @@ import org.json.JSONObject;
  */
 public class ParseEntityTask extends Task<EntityModel> {
 
+    private static final Pattern ENTITY_NAME_PATTERN = Pattern.compile("\\w+Entity");
+
     private final File javaFile;
     private final EntityModel entity;
     private final Set<String> validations;
@@ -324,6 +326,35 @@ public class ParseEntityTask extends Task<EntityModel> {
         node.getAnnotationByName("Column").ifPresent(annotation -> {
             this.columnAnalysis(property, (NormalAnnotationExpr) annotation);
         });
+
+        //Check Relation
+        for (String type : PropertyModel.RELATIONS) {
+            if (node.isAnnotationPresent(type)) {
+                property.setRelationType(type);
+                property.setRelationSource(getSourceOfRelation(property));
+                this.propertyAnalysis(property, node);
+                break;
+            }
+        }
+    }
+
+    private void relationAnalysis(PropertyModel property, NodeWithAnnotations node) {
+        
+    }
+
+    private String getSourceOfRelation(PropertyModel property) {
+        String entityName = property.getType();
+        Matcher matcher = ENTITY_NAME_PATTERN.matcher(property.getType());
+        if (matcher.find()) {
+            entityName = matcher.group();
+            for (String entityPkg : this.entity.getImportedObjects()) {
+                if (entityPkg.endsWith(entityName)) {
+                    entityName = entityPkg;
+                    break;
+                }
+            }
+        }
+        return entityName;
     }
 
     private void uiAnalysis(PropertyModel property, NormalAnnotationExpr annotation) {

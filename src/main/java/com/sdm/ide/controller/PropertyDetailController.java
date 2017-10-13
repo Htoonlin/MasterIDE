@@ -3,6 +3,7 @@ package com.sdm.ide.controller;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.core.Globalizer;
 import com.sdm.ide.component.AlertDialog;
+import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.model.EntityModel;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -49,58 +51,10 @@ public class PropertyDetailController implements Initializable {
     private CheckBox chkPropertyMMFont;
     @FXML
     private TextArea txtDescription;
-
-    public void setProperty(EntityModel entity, PropertyModel property) {
-        if (property == null) {
-            AlertDialog.showWarning("Invalid property.");
-            return;
-        }
-
-        if (entity == null) {
-            AlertDialog.showError("There is no entity for " + property.getName());
-            return;
-        }
-
-        this.currentEntity = entity;
-
-        this.currentProperty = property;
-        this.prevName = property.getName();
-
-        this.lblPropertyName.textProperty().bindBidirectional(property.nameProperty());
-
-        try {
-            this.txtPropertyName.textProperty().bindBidirectional(property.nameProperty());
-            this.cboPropertyType.valueProperty().bindBidirectional(property.typeProperty());
-            this.chkPropertyAuditable.selectedProperty().bindBidirectional(property.auditableProperty());
-            this.chkPropertySearchable.selectedProperty().bindBidirectional(property.searchableProperty());
-            this.chkPropertyJsonIgnore.selectedProperty().bindBidirectional(property.jsonIgnoreProperty());
-            this.chkPropertyMMFont.selectedProperty().bindBidirectional(property.allowMMFontProperty());
-            this.txtDescription.textProperty().bindBidirectional(property.descriptionProperty());
-
-            this.txtColumnName.textProperty().bindBidirectional(property.columnNameProperty());
-            this.txtColumnDef.textProperty().bindBidirectional(property.columnDefProperty());
-            this.chkColumnPrimary.selectedProperty().bindBidirectional(property.primaryProperty());
-            this.chkColumnRequired.selectedProperty().bindBidirectional(property.requiredProperty());
-
-            this.txtUILabel.textProperty().bindBidirectional(property.labelProperty());
-            this.cboUIInputType.valueProperty().bindBidirectional(property.inputTypeProperty());
-            this.txtUIIndex.textProperty().bindBidirectional(property.indexProperty(), new NumberStringConverter());
-            this.chkUIHideInGrid.selectedProperty().bindBidirectional(property.hideInGridProperty());
-            this.chkReadOnly.selectedProperty().bindBidirectional(property.readOnlyProperty());
-
-            if (property.getValidations() != null) {
-                ObservableList<AnnotationExpr> validations = FXCollections
-                        .observableArrayList(property.getValidations());
-                this.lstAnnotations.setItems(validations);
-            }
-
-            //Check MMFont 
-            this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
-            this.txtPropertyName.requestFocus();
-        } catch (Exception ex) {
-            AlertDialog.showException(ex);
-        }
-    }
+    @FXML
+    private ComboBox<String> cboRelations;
+    @FXML
+    private ComboBox<String> cboSource;
 
     @FXML
     private AnchorPane rootPane;
@@ -156,6 +110,62 @@ public class PropertyDetailController implements Initializable {
     @FXML
     private ListView<AnnotationExpr> lstAnnotations;
 
+    public void setProperty(EntityModel entity, PropertyModel property) {
+        if (property == null) {
+            AlertDialog.showWarning("Invalid property.");
+            return;
+        }
+
+        if (entity == null) {
+            AlertDialog.showError("There is no entity for " + property.getName());
+            return;
+        }
+
+        this.currentEntity = entity;
+
+        this.currentProperty = property;
+        this.prevName = property.getName();
+
+        this.lblPropertyName.textProperty().bindBidirectional(property.nameProperty());
+
+        try {
+            this.txtPropertyName.textProperty().bindBidirectional(property.nameProperty());
+            this.cboPropertyType.valueProperty().bindBidirectional(property.typeProperty());
+            this.chkPropertyAuditable.selectedProperty().bindBidirectional(property.auditableProperty());
+            this.chkPropertySearchable.selectedProperty().bindBidirectional(property.searchableProperty());
+            this.chkPropertyJsonIgnore.selectedProperty().bindBidirectional(property.jsonIgnoreProperty());
+            this.chkPropertyMMFont.selectedProperty().bindBidirectional(property.allowMMFontProperty());
+            this.txtDescription.textProperty().bindBidirectional(property.descriptionProperty());
+
+            this.txtColumnName.textProperty().bindBidirectional(property.columnNameProperty());
+            this.txtColumnDef.textProperty().bindBidirectional(property.columnDefProperty());
+            this.chkColumnPrimary.selectedProperty().bindBidirectional(property.primaryProperty());
+            this.chkColumnRequired.selectedProperty().bindBidirectional(property.requiredProperty());
+            this.cboRelations.valueProperty().bindBidirectional(property.relationTypeProperty());
+
+            //Check Relations
+            this.cboSource.valueProperty().bindBidirectional(property.relationSourceProperty());
+
+            this.txtUILabel.textProperty().bindBidirectional(property.labelProperty());
+            this.cboUIInputType.valueProperty().bindBidirectional(property.inputTypeProperty());
+            this.txtUIIndex.textProperty().bindBidirectional(property.indexProperty(), new NumberStringConverter());
+            this.chkUIHideInGrid.selectedProperty().bindBidirectional(property.hideInGridProperty());
+            this.chkReadOnly.selectedProperty().bindBidirectional(property.readOnlyProperty());
+
+            if (property.getValidations() != null) {
+                ObservableList<AnnotationExpr> validations = FXCollections
+                        .observableArrayList(property.getValidations());
+                this.lstAnnotations.setItems(validations);
+            }
+
+            //Check MMFont 
+            this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
+            this.txtPropertyName.requestFocus();
+        } catch (Exception ex) {
+            AlertDialog.showException(ex);
+        }
+    }
+
     private void showValidation(AnnotationExpr model, final boolean isUpdate) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ValidationDetail.fxml"));
@@ -188,10 +198,12 @@ public class PropertyDetailController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         mainScrollPane.setFitToWidth(true);
-
         try {
             cboUIInputType.setItems(TypeManager.getInstance().getInputTypes());
             cboPropertyType.setItems(TypeManager.getInstance().getJavaTypes());
+            cboRelations.setItems(FXCollections.observableArrayList(PropertyModel.RELATIONS));
+            Set<String> entities = HibernateManager.getInstance().getEntities();
+            cboSource.setItems(FXCollections.observableArrayList(entities));
         } catch (IOException e) {
             AlertDialog.showException(e);
         }
@@ -303,5 +315,10 @@ public class PropertyDetailController implements Initializable {
             this.currentEntity.setPrimaryProperty(this.currentProperty);
         }
 
+    }
+
+    @FXML
+    private void changeRelation(ActionEvent event) {
+        cboSource.setDisable(cboRelations.getValue().equalsIgnoreCase("None"));
     }
 }

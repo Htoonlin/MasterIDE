@@ -67,6 +67,8 @@
                                 <CheckBox fx:id="chkColumnRequired" mnemonicParsing="false" text="Required" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>
+                  <ComboBox fx:id="cboRelations" onAction="#changeRelation" prefWidth="320.0" promptText="Choose Relation Type" />
+                  <ComboBox fx:id="cboSource" prefWidth="320.0" promptText="Choose Source Entity" />
                         <Separator prefWidth="200.0" />
                         <TextField fx:id="txtUILabel" promptText="Label" />
                         <HBox spacing="5.0">
