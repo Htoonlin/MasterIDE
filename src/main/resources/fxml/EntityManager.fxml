@@ -2,12 +2,16 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 
@@ -15,7 +19,98 @@
     <items>
         <AnchorPane minWidth="-Infinity" prefWidth="600.0">
             <children>
-                <TableView fx:id="propertyTable" minWidth="300.0" onKeyPressed="#deleteKeyPressed" prefWidth="500.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
+                <TableView fx:id="propertyTable" minWidth="300.0" prefWidth="500.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0">
+                    <contextMenu>
+                        <ContextMenu>
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#showPropertyDetail" text="Property Info">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/property_info.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </MenuItem>
+                                <SeparatorMenuItem mnemonicParsing="false" />
+                                <MenuItem mnemonicParsing="false" onAction="#showDetail" text="Entity Info">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/info.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="F1" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                                <MenuItem mnemonicParsing="false" onAction="#reloadEntity" text="Reload">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/refresh.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="F5" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                                <SeparatorMenuItem mnemonicParsing="false" />
+                                <MenuItem mnemonicParsing="false" onAction="#addProperty" text="Add Property">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/add_property.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="N" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                                    </accelerator>
+                                </MenuItem>
+                                <MenuItem mnemonicParsing="false" onAction="#deleteProperty" text="Remove Property">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/remove.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="DELETE" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                                <SeparatorMenuItem mnemonicParsing="false" />
+                                <MenuItem mnemonicParsing="false" onAction="#writeEntity" text="Save Entity">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/save.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                                    </accelerator>
+                                </MenuItem>
+                                <MenuItem mnemonicParsing="false" onAction="#showCode" text="Show Code">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../image/code.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="F6" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
+                </TableView>
                 <HBox prefHeight="48.0" prefWidth="200.0" spacing="5.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
                         <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showDetail" prefHeight="48.0" prefWidth="50.0" text="Entity Info">
@@ -30,19 +125,19 @@
                                 <Tooltip text="Show Entity Info" />
                             </tooltip>
                         </Button>
-                  <Button contentDisplay="GRAPHIC_ONLY" layoutX="235.0" layoutY="15.0" mnemonicParsing="false" onAction="#reloadEntity" prefHeight="48.0" prefWidth="50.0" text="Reload">
-                     <graphic>
-                        <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/refresh.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Reload entity file" />
-                     </tooltip>
-                  </Button>
-                  <Separator orientation="VERTICAL" prefHeight="200.0" />
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="235.0" layoutY="15.0" mnemonicParsing="false" onAction="#reloadEntity" prefHeight="48.0" prefWidth="50.0" text="Reload">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/refresh.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Reload entity file" />
+                            </tooltip>
+                        </Button>
+                        <Separator orientation="VERTICAL" prefHeight="200.0" />
                         <Button contentDisplay="GRAPHIC_ONLY" layoutX="236.0" layoutY="19.0" mnemonicParsing="false" onAction="#addProperty" prefHeight="48.0" prefWidth="50.0" text="New Property">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
@@ -67,7 +162,7 @@
                                 <Tooltip text="Remove selected property" />
                             </tooltip>
                         </Button>
-                  <Separator orientation="VERTICAL" prefHeight="200.0" />
+                        <Separator orientation="VERTICAL" prefHeight="200.0" />
                         <Button contentDisplay="GRAPHIC_ONLY" layoutX="120.0" layoutY="19.0" mnemonicParsing="false" onAction="#writeEntity" prefHeight="48.0" prefWidth="50.0" text="Save Entity">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
@@ -80,18 +175,18 @@
                                 <Tooltip text="Save entity as a file." />
                             </tooltip>
                         </Button>
-                  <Button contentDisplay="GRAPHIC_ONLY" layoutX="375.0" layoutY="18.0" mnemonicParsing="false" onAction="#showCode" prefHeight="48.0" prefWidth="50.0" text="Show Code">
-                     <graphic>
-                        <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/code.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Show java code in editor" />
-                     </tooltip>
-                  </Button>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="375.0" layoutY="18.0" mnemonicParsing="false" onAction="#showCode" prefHeight="48.0" prefWidth="50.0" text="Show Code">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/code.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Show java code in editor" />
+                            </tooltip>
+                        </Button>
                     </children>
                     <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -296,6 +296,7 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void propertyAnalysis(PropertyModel property, NodeWithAnnotations node) {
+        this.showMessage("Analysis " + property.getName());
 
         //Check MMFont
         property.setAllowMMFont(this.allowMMFont(property.getName()));
@@ -332,14 +333,22 @@ public class ParseEntityTask extends Task<EntityModel> {
             if (node.isAnnotationPresent(type)) {
                 property.setRelationType(type);
                 property.setRelationSource(getSourceOfRelation(property));
-                this.propertyAnalysis(property, node);
+                this.relationAnalysis(property, node);
                 break;
             }
         }
     }
 
     private void relationAnalysis(PropertyModel property, NodeWithAnnotations node) {
-        
+        //Check JoinColumn
+        node.getAnnotationByName("JoinColumn").ifPresent(annotation -> {
+            this.columnAnalysis(property, (NormalAnnotationExpr) annotation);
+        });
+
+        //Check JoinTable
+        node.getAnnotationByName("JoinTable").ifPresent(annotation -> {
+            property.setJoinTable((NormalAnnotationExpr) annotation);
+        });
     }
 
     private String getSourceOfRelation(PropertyModel property) {

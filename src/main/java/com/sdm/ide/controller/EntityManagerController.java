@@ -52,7 +52,7 @@ public class EntityManagerController implements Initializable {
                 if (mouse.getButton() == MouseButton.PRIMARY && mouse.getClickCount() == 2 && !row.isEmpty()) {
                     PropertyModel property = row.getItem();
                     if (property != null) {
-                        showPropertyDetail(property);
+                        this.loadPropertyDetail(property);
                     }
                 }
             });
@@ -76,7 +76,7 @@ public class EntityManagerController implements Initializable {
         return loader.getController();
     }
 
-    private void showPropertyDetail(PropertyModel property) {
+    private void loadPropertyDetail(PropertyModel property) {
         /* Load Property Detail */
         try {
             PropertyDetailController controller = this.loadDetail("/fxml/PropertyDetail.fxml");
@@ -95,7 +95,7 @@ public class EntityManagerController implements Initializable {
                 dialog.start(task);
                 task.setOnSucceeded((event) -> {
                     currentEntity = task.getValue();
-                    TableHelper.generateColumns(PropertyModel.class, propertyTable);                    
+                    TableHelper.generateColumns(PropertyModel.class, propertyTable);
                     propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
                     propertyTable.getColumns().forEach(col -> {
                         if (col.getText().equalsIgnoreCase("index")) {
@@ -136,11 +136,11 @@ public class EntityManagerController implements Initializable {
         propertyTable.getItems().add(property);
         propertyTable.refresh();
         propertyTable.getSelectionModel().select(property);
-        this.showPropertyDetail(property);
+        this.loadPropertyDetail(property);
     }
 
     @FXML
-    private void deleteProperty() {
+    private void deleteProperty(ActionEvent event) {
         PropertyModel property = this.propertyTable.getSelectionModel().getSelectedItem();
         if (property != null) {
             Optional<ButtonType> confirm = AlertDialog
@@ -153,17 +153,6 @@ public class EntityManagerController implements Initializable {
                 this.propertyTable.getItems().remove(property);
                 this.propertyTable.refresh();
             }
-        }
-    }
-
-    public void deleteProperty(ActionEvent event) {
-        this.deleteProperty();
-    }
-
-    @FXML
-    void deleteKeyPressed(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-            this.deleteProperty();
         }
     }
 
@@ -189,7 +178,6 @@ public class EntityManagerController implements Initializable {
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
-
     }
 
     @FXML
@@ -218,6 +206,14 @@ public class EntityManagerController implements Initializable {
         Optional<ButtonType> result = AlertDialog.showQuestion("It will lost unsaved data. Do you want to continue?");
         if (result.isPresent() && result.get().equals(ButtonType.YES)) {
             this.loadEntity(this.currentEntity.getFile());
+        }
+    }
+
+    @FXML
+    private void showPropertyDetail(ActionEvent event) {
+        PropertyModel property = this.propertyTable.getSelectionModel().getSelectedItem();
+        if (property != null) {
+            this.loadPropertyDetail(property);
         }
     }
 }

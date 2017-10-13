@@ -51,10 +51,6 @@ public class PropertyDetailController implements Initializable {
     private CheckBox chkPropertyMMFont;
     @FXML
     private TextArea txtDescription;
-    @FXML
-    private ComboBox<String> cboRelations;
-    @FXML
-    private ComboBox<String> cboSource;
 
     @FXML
     private AnchorPane rootPane;
@@ -141,10 +137,6 @@ public class PropertyDetailController implements Initializable {
             this.txtColumnDef.textProperty().bindBidirectional(property.columnDefProperty());
             this.chkColumnPrimary.selectedProperty().bindBidirectional(property.primaryProperty());
             this.chkColumnRequired.selectedProperty().bindBidirectional(property.requiredProperty());
-            this.cboRelations.valueProperty().bindBidirectional(property.relationTypeProperty());
-
-            //Check Relations
-            this.cboSource.valueProperty().bindBidirectional(property.relationSourceProperty());
 
             this.txtUILabel.textProperty().bindBidirectional(property.labelProperty());
             this.cboUIInputType.valueProperty().bindBidirectional(property.inputTypeProperty());
@@ -201,9 +193,6 @@ public class PropertyDetailController implements Initializable {
         try {
             cboUIInputType.setItems(TypeManager.getInstance().getInputTypes());
             cboPropertyType.setItems(TypeManager.getInstance().getJavaTypes());
-            cboRelations.setItems(FXCollections.observableArrayList(PropertyModel.RELATIONS));
-            Set<String> entities = HibernateManager.getInstance().getEntities();
-            cboSource.setItems(FXCollections.observableArrayList(entities));
         } catch (IOException e) {
             AlertDialog.showException(e);
         }
@@ -318,7 +307,24 @@ public class PropertyDetailController implements Initializable {
     }
 
     @FXML
-    private void changeRelation(ActionEvent event) {
-        cboSource.setDisable(cboRelations.getValue().equalsIgnoreCase("None"));
+    private void addRelation(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntityRelation.fxml"));
+            AnchorPane root = (AnchorPane) loader.load();
+
+            Scene dialogScene = new Scene(root);
+            Stage dialogStage = new Stage();
+            dialogStage.initStyle(StageStyle.UTILITY);
+            dialogStage.setResizable(false);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.setAlwaysOnTop(true);
+            dialogStage.setScene(dialogScene);
+            dialogStage.show();
+
+            EntityRelationController controller = loader.getController();
+            controller.setProperty(this.currentProperty);            
+        } catch (Exception e) {
+            AlertDialog.showException(e);
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -78,36 +79,11 @@ public class PropertyModel implements Serializable {
 
     private MethodDeclaration setter;
 
+    /* Relational Info */
     private final StringProperty relationSource = new SimpleStringProperty();
-
-    public boolean hasRelation() {
-        return !this.getRelationType().equalsIgnoreCase("None");
-    }
-
-    public String getRelationSource() {
-        return relationSource.get();
-    }
-
-    public void setRelationSource(String value) {
-        relationSource.set(value);
-    }
-
-    public StringProperty relationSourceProperty() {
-        return relationSource;
-    }
+    private final StringProperty relationTable = new SimpleStringProperty();
     private final StringProperty relationType = new SimpleStringProperty("None");
-
-    public String getRelationType() {
-        return relationType.get();
-    }
-
-    public void setRelationType(String value) {
-        relationType.set(value);
-    }
-
-    public StringProperty relationTypeProperty() {
-        return relationType;
-    }
+    private NormalAnnotationExpr joinTable;
 
     /**
      * Field Validations
@@ -384,6 +360,54 @@ public class PropertyModel implements Serializable {
 
     public void setSystemGenerated(boolean systemGenerated) {
         this.systemGenerated = systemGenerated;
+    }
+
+    public String getRelationTable() {
+        return relationTable.get();
+    }
+
+    public void setRelationTable(String value) {
+        relationTable.set(value);
+    }
+
+    public StringProperty relationTableProperty() {
+        return relationTable;
+    }
+
+    public boolean hasRelation() {
+        return !this.getRelationType().equalsIgnoreCase("None");
+    }
+
+    public String getRelationSource() {
+        return relationSource.get();
+    }
+
+    public void setRelationSource(String value) {
+        relationSource.set(value);
+    }
+
+    public StringProperty relationSourceProperty() {
+        return relationSource;
+    }
+
+    public String getRelationType() {
+        return relationType.get();
+    }
+
+    public void setRelationType(String value) {
+        relationType.set(value);
+    }
+
+    public StringProperty relationTypeProperty() {
+        return relationType;
+    }
+
+    public NormalAnnotationExpr getJoinTable() {
+        return joinTable;
+    }
+
+    public void setJoinTable(NormalAnnotationExpr joinTable) {
+        this.joinTable = joinTable;
     }
 
     @Override
