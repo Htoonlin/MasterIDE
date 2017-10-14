@@ -5,7 +5,6 @@
  */
 package com.sdm.ide.controller;
 
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.ide.component.Callback;
 import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.model.PropertyModel;
@@ -60,9 +59,6 @@ public class EntityRelationController implements Initializable {
         this.cboSource.valueProperty().bindBidirectional(property.relationSourceProperty());
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cboRelations.setItems(FXCollections.observableArrayList(PropertyModel.RELATIONS));
