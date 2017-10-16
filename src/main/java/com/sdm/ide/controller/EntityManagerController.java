@@ -23,8 +23,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -158,26 +156,30 @@ public class EntityManagerController implements Initializable {
 
     @FXML
     public void writeEntity(ActionEvent event) {
-        if (this.currentEntity.getPrimaryProperty() == null) {
-            AlertDialog.showWarning("Sorry! We can't generate entity without primary property.");
-            return;
-        }
-
-        WriteEntityTask task = new WriteEntityTask(currentEntity);
-        ProgressDialog dialog = new ProgressDialog();
-        dialog.start(task);
-        task.setOnSucceeded(worker -> {
-            dialog.close();
-            if (task.getValue()) {
-                this.loadEntity(this.currentEntity.getFile());
-            } else {
-                AlertDialog.showWarning("Something wrong in code generation process.");
+        try {
+            if (this.currentEntity.getPrimaryProperty() == null) {
+                AlertDialog.showWarning("Sorry! We can't generate entity without primary property.");
+                return;
             }
-        });
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+            WriteEntityTask task = new WriteEntityTask(currentEntity);
+            ProgressDialog dialog = new ProgressDialog();
+            dialog.start(task);
+            task.setOnSucceeded(worker -> {
+                dialog.close();
+                if (task.getValue()) {
+                    this.loadEntity(this.currentEntity.getFile());
+                } else {
+                    AlertDialog.showWarning("Something wrong in code generation process.");
+                }
+            });
+
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
+        } catch (Exception ex) {
+            AlertDialog.showException(ex);
+        }
     }
 
     @FXML

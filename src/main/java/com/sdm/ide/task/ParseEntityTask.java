@@ -43,7 +43,7 @@ public class ParseEntityTask extends Task<EntityModel> {
     public ParseEntityTask(File javaFile) throws Exception {
         super();
         this.javaFile = javaFile;
-        this.validations = ValidationManager.getInstance().getValidations().toMap().keySet();
+        this.validations = ValidationManager.getInstance().getValidations().keySet();
         updateMessage("Init entity.");
         this.entity = new EntityModel(javaFile);
     }
@@ -329,25 +329,28 @@ public class ParseEntityTask extends Task<EntityModel> {
         });
 
         //Check Relation
-        for (String type : PropertyModel.RELATIONS) {
-            if (node.isAnnotationPresent(type)) {
-                property.setRelationType(type);
-                property.setRelationSource(getSourceOfRelation(property));
-                this.relationAnalysis(property, node);
-                break;
-            }
-        }
+        this.relationAnalysis(property, node);
     }
 
     private void relationAnalysis(PropertyModel property, NodeWithAnnotations node) {
+        //Check Relation
+        for (PropertyModel.Relation type : PropertyModel.Relation.values()) {
+            node.getAnnotationByName(type.toString()).ifPresent(relation -> {
+                property.setRelationAnnotation((AnnotationExpr) relation);
+                property.setRelationSource(getSourceOfRelation(property));
+            });
+        }
+
         //Check JoinColumn
         node.getAnnotationByName("JoinColumn").ifPresent(annotation -> {
+            property.setColumnDef("");
             this.columnAnalysis(property, (NormalAnnotationExpr) annotation);
+            property.setJoinAnnotaion((NormalAnnotationExpr) annotation);
         });
 
         //Check JoinTable
         node.getAnnotationByName("JoinTable").ifPresent(annotation -> {
-            property.setJoinTable((NormalAnnotationExpr) annotation);
+            property.setJoinAnnotaion((NormalAnnotationExpr) annotation);
         });
     }
 

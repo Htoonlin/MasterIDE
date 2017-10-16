@@ -45,6 +45,7 @@ public class EntityInfoController implements Initializable {
 
     @FXML
     private ScrollPane mainScrollPane;
+
     @FXML
     private TextArea txtDescription;
 

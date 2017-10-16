@@ -8,6 +8,7 @@ package com.sdm.ide.task;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -29,8 +30,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.concurrent.Task;
 import javax.xml.transform.TransformerException;
@@ -44,14 +48,26 @@ public class WriteEntityTask extends Task<Boolean> {
 
     private final EntityModel entity;
 
-    private final String[] processAnnotations = {
-        "UIStructure", "Column",
-        "Audited", "NotAudited",
-        "JsonIgnore",
-        "Id", "GeneratedValue"
-    };
+    private Set<String> processAnnotations;
 
-    public WriteEntityTask(EntityModel entity) {
+    public WriteEntityTask(EntityModel entity) throws Exception {
+        super();
+        this.processAnnotations = new HashSet(ValidationManager.getInstance().getValidations().keySet());
+        Collections.addAll(processAnnotations,
+                "UIStructure", "Column",
+                "Audited", "NotAudited",
+                "JsonIgnore",
+                "Id", "GeneratedValue",
+                "JoinColumn", "JoinTable"
+        );
+
+        for (PropertyModel.Relation anno : PropertyModel.Relation.values()) {
+            if (anno.equals(PropertyModel.Relation.None)) {
+                continue;
+            }
+            this.processAnnotations.add(anno.toString());
+        }
+
         this.entity = entity;
     }
 
@@ -228,51 +244,60 @@ public class WriteEntityTask extends Task<Boolean> {
         }
     }
 
-    private void removeAnnotation(ClassOrInterfaceDeclaration entityObject,
-            String propertyName, String annotation) {
+    private void removeAnnotation(ClassOrInterfaceDeclaration entityObject, String propertyName) {
         //Field clean
         entityObject.getFieldByName(propertyName).ifPresent(field -> {
-            field.getAnnotationByName(annotation).ifPresent(anno -> {
-                field.remove(anno);
+            List<Node> removeList = new ArrayList<>();
+            field.getAnnotations().forEach(anno -> {
+                if (anno != null) {
+                    String annoName = anno.getNameAsString();
+                    if (processAnnotations.contains(annoName)) {
+                        removeList.add(anno);
+                    }
+                } else {
+                    System.out.println("Invalid Anno [" + propertyName + "] => " + anno.toString());
+                }
             });
+            removeList.forEach(node -> field.remove(node));
         });
 
         //Getter clean
         String methodName = "get" + Globalizer.capitalize(propertyName);
         entityObject.getMethodsByName(methodName).forEach(method -> {
-            method.getAnnotationByName(annotation).ifPresent(anno -> {
-                method.remove(anno);
+            List<Node> removeList = new ArrayList<>();
+            method.getAnnotations().forEach(anno -> {
+                String annoName = anno.getNameAsString();
+                if (processAnnotations.contains(annoName)) {
+                    removeList.add(anno);
+                }
             });
+            removeList.forEach(node -> method.remove(node));
         });
 
         //Setter clean
         methodName = "set" + Globalizer.capitalize(propertyName);
         entityObject.getMethodsByName(methodName).forEach(method -> {
-            method.getAnnotationByName(annotation).ifPresent(anno -> {
-                method.remove(anno);
+            List<Node> removeList = new ArrayList<>();
+            method.getAnnotations().forEach(anno -> {
+                String annoName = anno.getNameAsString();
+                if (processAnnotations.contains(annoName)) {
+                    removeList.add(anno);
+                }
             });
+            removeList.forEach(node -> method.remove(node));
         });
     }
 
     private void writeProperty(ClassOrInterfaceDeclaration entityObject, PropertyModel property) throws Exception {
-        //Clean processable annotations
-        this.showMessage("Clean processable annotations.");
-        for (String anno : this.processAnnotations) {
-            this.removeAnnotation(entityObject, property.getName(), anno);
-        }
-
-        //Clean Validate annotations
-        this.showMessage("Clean validate annotations.");
-        Set<String> validations = ValidationManager.getInstance().getValidations().toMap().keySet();
-        for (String anno : validations) {
-            this.removeAnnotation(entityObject, property.getName(), anno);
-        }
-
         this.showMessage("Creating property : " + property.getName());
 
         FieldDeclaration field = property.getFieldObject();
         if (field == null) {
             field = entityObject.addField(property.getType(), property.getName(), Modifier.PRIVATE);
+        } else {
+            this.showMessage("Clean annotations of " + property.getName() + ".");
+            //Clean annotations
+            this.removeAnnotation(entityObject, property.getName());
         }
 
         //Write comment
@@ -313,8 +338,13 @@ public class WriteEntityTask extends Task<Boolean> {
         //Create @UIStructure
         this.writeUIAnnotation(field, property);
 
-        //Create @Column
-        this.writeColumnAnnotation(field, property);
+        //Create @Column or Relation
+        if (property.getRelationAnnotation() != null) {
+            field.addAnnotation(property.getJoinAnnotaion());
+            field.addAnnotation(property.getRelationAnnotation());
+        } else {
+            this.writeColumnAnnotation(field, property);
+        }
 
         //Check search field
         if (property.isSearchable()) {

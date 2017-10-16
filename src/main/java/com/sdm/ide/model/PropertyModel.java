@@ -21,7 +21,14 @@ public class PropertyModel implements Serializable {
 
     private static final long serialVersionUID = 1027044065751863361L;
 
-    public static final String[] RELATIONS = {"None", "OneToOne", "OneToMany", "ManyToOne", "ManyToMany"};
+    public enum Relation {
+        None,
+        OneToOne,
+        OneToMany,
+        ManyToOne,
+        ManyToMany;
+    }
+
 
     /* Java Properties */
     @FXColumn(width = 120)
@@ -81,9 +88,8 @@ public class PropertyModel implements Serializable {
 
     /* Relational Info */
     private final StringProperty relationSource = new SimpleStringProperty();
-    private final StringProperty relationTable = new SimpleStringProperty();
-    private final StringProperty relationType = new SimpleStringProperty("None");
-    private NormalAnnotationExpr joinTable;
+    private AnnotationExpr relationAnnotation;
+    private NormalAnnotationExpr joinAnnotaion;
 
     /**
      * Field Validations
@@ -362,22 +368,6 @@ public class PropertyModel implements Serializable {
         this.systemGenerated = systemGenerated;
     }
 
-    public String getRelationTable() {
-        return relationTable.get();
-    }
-
-    public void setRelationTable(String value) {
-        relationTable.set(value);
-    }
-
-    public StringProperty relationTableProperty() {
-        return relationTable;
-    }
-
-    public boolean hasRelation() {
-        return !this.getRelationType().equalsIgnoreCase("None");
-    }
-
     public String getRelationSource() {
         return relationSource.get();
     }
@@ -390,24 +380,20 @@ public class PropertyModel implements Serializable {
         return relationSource;
     }
 
-    public String getRelationType() {
-        return relationType.get();
+    public AnnotationExpr getRelationAnnotation() {
+        return relationAnnotation;
     }
 
-    public void setRelationType(String value) {
-        relationType.set(value);
+    public void setRelationAnnotation(AnnotationExpr relationAnnotation) {
+        this.relationAnnotation = relationAnnotation;
     }
 
-    public StringProperty relationTypeProperty() {
-        return relationType;
+    public NormalAnnotationExpr getJoinAnnotaion() {
+        return joinAnnotaion;
     }
 
-    public NormalAnnotationExpr getJoinTable() {
-        return joinTable;
-    }
-
-    public void setJoinTable(NormalAnnotationExpr joinTable) {
-        this.joinTable = joinTable;
+    public void setJoinAnnotaion(NormalAnnotationExpr joinAnnotaion) {
+        this.joinAnnotaion = joinAnnotaion;
     }
 
     @Override

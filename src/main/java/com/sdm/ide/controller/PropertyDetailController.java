@@ -322,7 +322,10 @@ public class PropertyDetailController implements Initializable {
             dialogStage.show();
 
             EntityRelationController controller = loader.getController();
-            controller.setProperty(this.currentProperty);            
+            controller.setProperty(this.currentProperty);
+            controller.onDone(result -> {
+                this.currentEntity.addImport(result.getRelationSource());
+            });
         } catch (Exception e) {
             AlertDialog.showException(e);
         }
