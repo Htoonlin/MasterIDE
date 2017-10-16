@@ -102,13 +102,13 @@ public class EntityRelationController implements Initializable {
             case ManyToOne:
                 property.setType("Set<" + source.getIdentifier() + ">");
                 property.setInputType("objectlist");
-                property.setColumnDef("int");
+                property.setColumnDef("");
                 break;
             case OneToOne:
             case OneToMany:
                 property.setType(source.getIdentifier());
-                property.setColumnDef("int");
                 property.setInputType("object");
+                property.setColumnDef("");
                 break;
         }
     }
@@ -220,9 +220,6 @@ public class EntityRelationController implements Initializable {
                     annotation.setName("JoinColumn");
                     String value = "\"" + Utility.escape(property.getColumnName()) + "\"";
                     annotation.addPair("name", value);
-
-                    value = "\"" + Utility.escape(property.getColumnDef()) + "\"";
-                    annotation.addPair("columnDefinition", value);
 
                     value = property.isRequired() ? "false" : "true";
                     annotation.addPair("nullable", value);
