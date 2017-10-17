@@ -1,6 +1,5 @@
 package com.sdm.ide.model;
 
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -8,7 +7,6 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.sdm.ide.component.annotation.FXColumn;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -105,6 +103,11 @@ public class PropertyModel implements Serializable {
         this.columnName = new SimpleStringProperty("col" + index);
         this.index = new SimpleIntegerProperty(index);
         this.systemGenerated = true;
+    }
+    
+    public PropertyModel(PropertyModel model){
+        this();
+        this.setName(model.getName());
     }
 
     public PropertyModel() {

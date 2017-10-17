@@ -58,7 +58,7 @@
                                     </accelerator>
                                 </MenuItem>
                                 <SeparatorMenuItem mnemonicParsing="false" />
-                                <MenuItem mnemonicParsing="false" onAction="#addProperty" text="Add Property">
+                                <MenuItem mnemonicParsing="false" onAction="#addProperty" text="Add">
                                     <graphic>
                                         <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                             <image>
@@ -70,7 +70,19 @@
                                         <KeyCodeCombination alt="UP" code="N" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                                     </accelerator>
                                 </MenuItem>
-                                <MenuItem mnemonicParsing="false" onAction="#deleteProperty" text="Remove Property">
+                        <MenuItem mnemonicParsing="false" onAction="#cloneProperty" text="Duplicate">
+                           <graphic>
+                              <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../image/clone.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="D" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                           </accelerator>
+                        </MenuItem>
+                                <MenuItem mnemonicParsing="false" onAction="#deleteProperty" text="Remove">
                                     <graphic>
                                         <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                             <image>
@@ -150,6 +162,18 @@
                                 <Tooltip text="Add new property" />
                             </tooltip>
                         </Button>
+                  <Button contentDisplay="GRAPHIC_ONLY" layoutX="136.0" layoutY="15.0" mnemonicParsing="false" onAction="#cloneProperty" prefHeight="48.0" prefWidth="50.0" text="Clone Property">
+                     <graphic>
+                        <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/clone.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Clone Selected Property" />
+                     </tooltip>
+                  </Button>
                         <Button contentDisplay="GRAPHIC_ONLY" layoutX="120.0" layoutY="18.0" mnemonicParsing="false" onAction="#deleteProperty" prefHeight="48.0" prefWidth="50.0" text="Delete Property">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true" scaleX="0.9" scaleY="0.9">
