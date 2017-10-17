@@ -149,10 +149,11 @@ public class PropertyDetailController implements Initializable {
             }
 
             //Check ColumnDef
-            this.txtColumnName.setDisable(property.getRelationAnnotation().getNameAsString()
-                    .equals(PropertyModel.Relation.ManyToMany.toString()));
-            this.txtColumnDef.setDisable(property.getRelationAnnotation() != null
-                    && !property.getRelationSource().isEmpty());
+            if (property.getRelationAnnotation() != null) {
+                this.txtColumnName.setDisable(property.getRelationAnnotation().getNameAsString()
+                        .equals(PropertyModel.Relation.ManyToMany.toString()));
+                this.txtColumnDef.setDisable(!property.getRelationSource().isEmpty());
+            }
 
             //Check MMFont 
             this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
@@ -337,10 +338,12 @@ public class PropertyDetailController implements Initializable {
             EntityRelationController controller = loader.getController();
             controller.setProperty(this.currentProperty);
             controller.onDone(result -> {
-                this.txtColumnName.setDisable(result.getRelationAnnotation().getNameAsString()
-                        .equals(PropertyModel.Relation.ManyToMany.toString()));
-                this.txtColumnDef.setDisable(result.getRelationAnnotation() != null && !result.getRelationSource().isEmpty());
-                this.currentEntity.addImport(result.getRelationSource());
+                if (result.getRelationAnnotation() != null) {
+                    this.txtColumnName.setDisable(result.getRelationAnnotation().getNameAsString()
+                            .equals(PropertyModel.Relation.ManyToMany.toString()));
+                    this.txtColumnDef.setDisable(!result.getRelationSource().isEmpty());
+                    this.currentEntity.addImport(result.getRelationSource());
+                }
             });
         } catch (Exception e) {
             AlertDialog.showException(e);
