@@ -78,6 +78,7 @@ public class PropertyModel implements Serializable {
     @FXColumn(visible = false)
     private BooleanProperty readOnly;
 
+    /* Java Code Info */
     private FieldDeclaration fieldObject;
 
     private MethodDeclaration getter;
@@ -85,7 +86,7 @@ public class PropertyModel implements Serializable {
     private MethodDeclaration setter;
 
     /* Relational Info */
-    private final StringProperty relationSource = new SimpleStringProperty();
+    private final StringProperty relationSource;
     private AnnotationExpr relationAnnotation;
     private NormalAnnotationExpr joinAnnotaion;
 
@@ -94,8 +95,14 @@ public class PropertyModel implements Serializable {
      */
     private Set<AnnotationExpr> validations;
 
+    /* Field is new */
     private boolean systemGenerated;
 
+    /**
+     * Init Property model by index.
+     *
+     * @param index
+     */
     public PropertyModel(int index) {
         this();
         this.name = new SimpleStringProperty("prop" + index);
@@ -104,12 +111,44 @@ public class PropertyModel implements Serializable {
         this.index = new SimpleIntegerProperty(index);
         this.systemGenerated = true;
     }
-    
-    public PropertyModel(PropertyModel model){
-        this();
-        this.setName(model.getName());
+
+    /**
+     * Clone Property Model
+     *
+     * @param model
+     */
+    public PropertyModel(PropertyModel model) {
+        this.name = new SimpleStringProperty(model.getName());
+        this.label = new SimpleStringProperty(model.getLabel());
+        this.type = new SimpleStringProperty(model.getType());
+        this.description = new SimpleStringProperty(model.getDescription());
+        this.columnName = new SimpleStringProperty(model.getColumnName());
+        this.columnDef = new SimpleStringProperty(model.getColumnDef());
+        this.inputType = new SimpleStringProperty(model.getInputType());
+        this.index = new SimpleIntegerProperty(model.getIndex());
+        this.primary = new SimpleBooleanProperty(model.isPrimary());
+        this.required = new SimpleBooleanProperty(model.isRequired());
+        this.hideInGrid = new SimpleBooleanProperty(model.isHideInGrid());
+        this.allowMMFont = new SimpleBooleanProperty(model.isAllowMMFont());
+        this.readOnly = new SimpleBooleanProperty(model.isReadOnly());
+        this.auditable = new SimpleBooleanProperty(model.isAuditable());
+        this.searchable = new SimpleBooleanProperty(model.isSearchable());
+        this.jsonIgnore = new SimpleBooleanProperty(model.isJsonIgnore());
+        this.validations = new HashSet(model.getValidations());
+        this.relationSource = new SimpleStringProperty(model.getRelationSource());
+        if (model.getRelationAnnotation() != null) {
+            this.relationAnnotation = model.getRelationAnnotation().clone();
+        }
+        if (model.getJoinAnnotaion() != null) {
+            this.joinAnnotaion = model.getJoinAnnotaion().clone();
+        }
+
+        this.systemGenerated = true;
     }
 
+    /**
+     * Init default property model.
+     */
     public PropertyModel() {
         this.name = new SimpleStringProperty("");
         this.label = new SimpleStringProperty("");
@@ -128,6 +167,7 @@ public class PropertyModel implements Serializable {
         this.searchable = new SimpleBooleanProperty(false);
         this.jsonIgnore = new SimpleBooleanProperty(false);
         this.validations = new HashSet<>();
+        this.relationSource = new SimpleStringProperty();
     }
 
     public FieldDeclaration getFieldObject() {
@@ -163,7 +203,7 @@ public class PropertyModel implements Serializable {
     }
 
     public void addValidation(AnnotationExpr annotation) {
-        if (this.validations.contains(annotation)) {
+        if (!this.validations.contains(annotation)) {
             if (this.fieldObject != null) {
                 this.fieldObject.addAnnotation(annotation);
             }

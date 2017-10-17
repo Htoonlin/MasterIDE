@@ -48,8 +48,8 @@ public final class EntityModel implements Serializable {
         this.tableName = new SimpleStringProperty("");
         this.moduleName = new SimpleStringProperty("");
         this.resourcePath = new SimpleStringProperty("");
-        this.auditable = new SimpleBooleanProperty(false);
-        this.dynamicUpdate = new SimpleBooleanProperty(false);
+        this.auditable = new SimpleBooleanProperty(true);
+        this.dynamicUpdate = new SimpleBooleanProperty(true);
         this.mappedWithDB = new SimpleBooleanProperty(true);
         this.description = new SimpleStringProperty("");
         this.searchFields = new HashSet<>();
@@ -155,23 +155,22 @@ public final class EntityModel implements Serializable {
     }
 
     public void removeProperty(PropertyModel property) {
-        this.removeFieldFromEntityObject(property.getName());
+        this.removeFieldCode(property.getName());
 
         //Remove Property
         this.properties.remove(property);
     }
 
-    public void removeFieldFromEntityObject(String propertyName) {
-        //Remove Field
-        this.entityObject.getFieldByName(propertyName).ifPresent(field -> {
+    public void removeFieldCode(String name) {
+        this.entityObject.getFieldByName(name).ifPresent(field -> {
             this.entityObject.remove(field);
         });
 
-        //Remove getter/setter and MMFontGetter/Setter
+        //Remove Getter/Settern and MMFontGetter/Setter
         String[] methodPrefixs = {"get", "set", "getMM", "setMM"};
         for (String prefix : methodPrefixs) {
-            String methodName = prefix + Globalizer.capitalize(propertyName);
-            this.entityObject.getMethodsByName(methodName).forEach(method -> {
+            String methodName = prefix + Globalizer.capitalize(name);
+            this.entityObject.getMethodsByName(methodName).forEach((method) -> {
                 this.entityObject.remove(method);
             });
         }

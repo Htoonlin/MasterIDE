@@ -350,6 +350,7 @@ public class ParseEntityTask extends Task<EntityModel> {
 
         //Check JoinTable
         node.getAnnotationByName("JoinTable").ifPresent(annotation -> {
+            property.setColumnDef("");
             property.setJoinAnnotaion((NormalAnnotationExpr) annotation);
         });
     }

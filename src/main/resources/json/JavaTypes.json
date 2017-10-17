@@ -28,7 +28,7 @@
         ]
     },
     "boolean": {
-        "db": "BIT",
+        "db": "BIT(1)",
         "input": "checkbox",
         "supported_validations": [
             "AssertFalse",

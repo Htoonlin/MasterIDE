@@ -234,9 +234,13 @@ public class MainController implements Initializable {
                         File entityFile = new File(model.getFile().getParent() + File.separatorChar + name + ".java");
                         try {
                             //Clone File
-                            String source = new String(Files.readAllBytes(model.getFile().toPath()));
-                            source = source.replaceAll(model.getLabel(), name);
-                            Files.write(entityFile.toPath(), source.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+                            if (entityFile.createNewFile()) {
+                                String source = new String(Files.readAllBytes(model.getFile().toPath()));
+                                source = source.replaceAll(model.getLabel(), name);
+                                Files.write(entityFile.toPath(), source.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+                            } else {
+                                AlertDialog.showWarning("Can't create new entity file.");
+                            }
 
                             ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name);
                             TreeItem<ProjectTreeModel> entityTree = new TreeItem<>(entityModel,

@@ -6,7 +6,6 @@
 package com.sdm.ide.controller;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
@@ -215,6 +214,8 @@ public class EntityRelationController implements Initializable {
                     break;
                 case None:
                     property.setRelationAnnotation(null);
+                    property.setJoinAnnotaion(null);
+                    property.setRelationSource("");
                     break;
                 default:
                     annotation.setName("JoinColumn");

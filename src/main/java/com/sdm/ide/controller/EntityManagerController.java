@@ -27,7 +27,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.apache.commons.lang.SerializationUtils;
 
 public class EntityManagerController implements Initializable {
 
@@ -224,13 +223,7 @@ public class EntityManagerController implements Initializable {
     private void cloneProperty(ActionEvent event) {
         PropertyModel propSource = this.propertyTable.getSelectionModel().getSelectedItem();
         if (propSource != null) {
-            int index = this.currentEntity.getProperties().size();
-            PropertyModel propDest = (PropertyModel) SerializationUtils.clone(propSource);
-            propDest.setFieldObject(null);
-            propDest.setGetter(null);
-            propDest.setSetter(null);
-            propDest.setSystemGenerated(true);
-            propDest.setName("prop" + index);
+            PropertyModel propDest = new PropertyModel(propSource);
             this.currentEntity.addProperty(propDest);
             propertyTable.getItems().add(propDest);
             propertyTable.refresh();

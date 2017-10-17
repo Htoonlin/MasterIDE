@@ -3,7 +3,6 @@ package com.sdm.ide.controller;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.sdm.core.Globalizer;
 import com.sdm.ide.component.AlertDialog;
-import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.helper.TypeManager;
 import com.sdm.ide.model.EntityModel;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -150,6 +148,9 @@ public class PropertyDetailController implements Initializable {
                 this.lstAnnotations.setItems(validations);
             }
 
+            //Check ColumnDef
+            this.txtColumnDef.setDisable(property.getRelationAnnotation() != null && !property.getRelationSource().isEmpty());
+
             //Check MMFont 
             this.chkPropertyMMFont.setVisible(property.getType().equalsIgnoreCase("string"));
             this.txtPropertyName.requestFocus();
@@ -216,17 +217,26 @@ public class PropertyDetailController implements Initializable {
                 } else if (!this.currentProperty.isSystemGenerated()) {
                     Optional<ButtonType> result = AlertDialog.showQuestion("It will remove old property infos. Do you want to continue?");
                     if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+                        //Remove code from previous object
+                        this.currentEntity.removeFieldCode(prevName);
+                        //Set Null to JavaParser Objects
+                        this.currentProperty.setFieldObject(null);
+                        this.currentProperty.setGetter(null);
+                        this.currentProperty.setSetter(null);
+
+                        this.currentProperty.setColumnName(txtPropertyName.getText());
+                        this.currentProperty.setLabel(Globalizer.capitalize(txtPropertyName.getText()));
                         prevName = txtPropertyName.getText();
-                        this.currentEntity.removeFieldFromEntityObject(currentProperty.getName());
                     } else {
                         txtPropertyName.setText(prevName);
                     }
                 } else {
-                    prevName = txtPropertyName.getText();
                     this.currentProperty.setSystemGenerated(false);
                     this.currentProperty.setColumnName(txtPropertyName.getText());
                     this.currentProperty.setLabel(Globalizer.capitalize(txtPropertyName.getText()));
+                    prevName = txtPropertyName.getText();
                 }
+
             }
         });
     }
@@ -324,6 +334,7 @@ public class PropertyDetailController implements Initializable {
             EntityRelationController controller = loader.getController();
             controller.setProperty(this.currentProperty);
             controller.onDone(result -> {
+                this.txtColumnDef.setDisable(result.getRelationAnnotation() != null && !result.getRelationSource().isEmpty());
                 this.currentEntity.addImport(result.getRelationSource());
             });
         } catch (Exception e) {
