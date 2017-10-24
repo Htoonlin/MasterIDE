@@ -56,7 +56,7 @@ public class CodeEditorController implements Initializable {
     private final String BRACE_PATTERN = "\\{|\\}";
     private final String BRACKET_PATTERN = "\\[|\\]";
     private final String SEMICOLON_PATTERN = "\\;";
-    private final String STRING_PATTERN = "('|\")([^'\"\\\\]|\\\\.)*('\")";
+    private final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
     private final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
     private final String ANNOTATION_PATTERN = "@[a-zA-Z0-9_]+";
 
@@ -71,7 +71,7 @@ public class CodeEditorController implements Initializable {
             + "|(?<ANNOTATION>" + ANNOTATION_PATTERN + ")"
     );
 
-    public StyleSpans<Collection<String>> highlightNow(String source) {
+    private StyleSpans<Collection<String>> highlightNow(String source) {
         Matcher matcher = PATTERN.matcher(source);
         int lastKwEnd = 0;
         StyleSpansBuilder<Collection<String>> spansBuilder
@@ -127,9 +127,7 @@ public class CodeEditorController implements Initializable {
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
                 .subscribe(change -> {
-                    if (!codeArea.getText().isEmpty()) {
-                        codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
-                    }
+                    codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
                 });
 
         this.editorPane.getChildren().add(new VirtualizedScrollPane<>(codeArea));

@@ -12,24 +12,24 @@
 
 <AnchorPane id="AnchorPane" fx:id="rootPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sdm.ide.controller.QueryEditorController">
    <children>
-      <StackPane fx:id="editorPane" prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-      <BorderPane layoutX="10.0" layoutY="10.0" prefHeight="48.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <StackPane fx:id="editorPane" prefHeight="150.0" prefWidth="200.0" stylesheets="@syntax.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
+      <BorderPane prefHeight="48.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <right>
-            <Button defaultButton="true" mnemonicParsing="false" onAction="#doneClick" prefHeight="32.0" prefWidth="90.0" text="Done" BorderPane.alignment="CENTER">
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#saveCode" prefHeight="32.0" prefWidth="80.0" text="Save" BorderPane.alignment="CENTER">
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../image/done.png" />
+                        <Image url="@../image/save.png" />
                      </image>
                   </ImageView>
                </graphic>
                <tooltip>
-                  <Tooltip text="Done" />
+                  <Tooltip text="Save source code" />
                </tooltip>
             </Button>
          </right>
          <left>
-            <Button cancelButton="true" mnemonicParsing="false" onAction="#cancelClick" prefHeight="32.0" prefWidth="90.0" text="Cancel" BorderPane.alignment="CENTER">
+            <Button mnemonicParsing="false" onAction="#closeEditor" prefHeight="32.0" prefWidth="80.0" text="Close" BorderPane.alignment="CENTER">
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -38,22 +38,21 @@
                   </ImageView>
                </graphic>
                <tooltip>
-                  <Tooltip text="Done" />
+                  <Tooltip text="Close editor" />
                </tooltip>
             </Button>
          </left>
          <center>
-            <HBox alignment="CENTER" spacing="8.0" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="8.0" BorderPane.alignment="CENTER">
                <children>
                   <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../image/write_query.png" />
                      </image>
                   </ImageView>
-                  <TextField fx:id="txtName" prefWidth="280.0" promptText="Enter query name" />
+                  <TextField fx:id="txtName" prefWidth="280.0" promptText="Enter Query Name" />
                </children>
             </HBox>
-         </center>
-      </BorderPane>
+         </center></BorderPane>
    </children>
 </AnchorPane>

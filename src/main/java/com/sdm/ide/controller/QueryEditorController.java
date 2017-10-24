@@ -32,8 +32,8 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  * @author htoonlin
  */
 public class QueryEditorController implements Initializable {
-
-    private final String[] HQL_KEYWORDS = new String[]{
+    
+     private final String[] HQL_KEYWORDS = new String[]{
         "all", "any", "and", "as", "asc", "avg", "between", "class",
         "count", "delete", "desc", "dot", "distinct", "elements", "escape",
         "exists", "false", "fetch", "from", "full", "group", "having", "in",
@@ -43,14 +43,14 @@ public class QueryEditorController implements Initializable {
         "update", "versioned", "where", "nulls", "first", "last"
     };
 
-    private final String KEYWORD_PATTERN = "\\b(?" + String.join("|?", HQL_KEYWORDS) + ")\\b";
+    private final String KEYWORD_PATTERN = "(?i)\\b(" + String.join("|", HQL_KEYWORDS) + ")\\b";
     private final String PAREN_PATTERN = "\\(|\\)";
     private final String BRACE_PATTERN = "\\{|\\}";
     private final String BRACKET_PATTERN = "\\[|\\]";
     private final String SEMICOLON_PATTERN = "\\;";
-    private final String STRING_PATTERN = "('|\")([^'\"\\\\]|\\\\.)*('\")";
+    private final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
     private final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
-    private final String PARAM_PATTERN = "\\b:\\w+\\b";
+    private final String PARAM_PATTERN = ":[A-Za-z0-9_]+";
 
     private final Pattern PATTERN = Pattern.compile(
             "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
@@ -63,40 +63,7 @@ public class QueryEditorController implements Initializable {
             + "|(?<PARAM>" + PARAM_PATTERN + ")"
     );
 
-    @FXML
-    private StackPane editorPane;
-
-    @FXML
-    private AnchorPane rootPane;
-
-    @FXML
-    private TextField txtName;
-
-    private CodeArea codeArea;
-
-    private Callback<Pair> doneHandler;
-
-    private Callback<Pair> cancelHandler;
-
-    public void setQuery(String title, String code) {
-        codeArea.replaceText(0, 0, code);
-        txtName.setText(title);
-    }
-
-    public void onDone(Callback<Pair> handler) {
-        this.doneHandler = handler;
-    }
-
-    public void onCancel(Callback<Pair> handler) {
-        this.cancelHandler = handler;
-    }
-
-    private void close() {
-        Stage stage = (Stage) this.rootPane.getScene().getWindow();
-        stage.close();
-    }
-
-    public StyleSpans<Collection<String>> highlightNow(String source) {
+    private StyleSpans<Collection<String>> highlightNow(String source) {
         Matcher matcher = PATTERN.matcher(source);
         int lastKwEnd = 0;
         StyleSpansBuilder<Collection<String>> spansBuilder
@@ -110,7 +77,7 @@ public class QueryEditorController implements Initializable {
                     : matcher.group("SEMICOLON") != null ? "semicolon"
                     : matcher.group("STRING") != null ? "string"
                     : matcher.group("COMMENT") != null ? "comment"
-                    : matcher.group("PARAM") != null ? "annotation"
+                    : matcher.group("PARAM") != null ? "param"
                     : null;
             /* never happens */
             assert styleClass != null;
@@ -122,9 +89,34 @@ public class QueryEditorController implements Initializable {
         return spansBuilder.create();
     }
 
-    /**
-     * Initializes the controller class.
-     */
+    @FXML
+    private StackPane editorPane;
+
+    @FXML
+    private AnchorPane rootPane;
+
+    @FXML
+    private TextField txtName;
+
+    private CodeArea codeArea;
+    
+    private Callback<Pair> saveHandler;
+
+    public void setQuery(String title, String code) {
+        codeArea.replaceText(0, 0, code);
+        txtName.setText(title);
+    }
+    
+    public void onSave(Callback<Pair> handler){
+        this.saveHandler = handler;
+    }
+
+    private void close() {
+        Stage stage = (Stage) this.rootPane.getScene().getWindow();
+        stage.close();
+    }
+
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         codeArea = new CodeArea();
@@ -132,30 +124,25 @@ public class QueryEditorController implements Initializable {
 
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .subscribe(change -> {
-                    if (!codeArea.getText().isEmpty()) {
-                        codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
-                    }
+                .subscribe(change -> {          
+                    codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
                 });
 
         this.editorPane.getChildren().add(new VirtualizedScrollPane<>(codeArea));
     }
 
     @FXML
-    void cancelClick(ActionEvent event) {
-        if (this.cancelHandler != null) {
-            this.cancelHandler.call(null);
-        }
-
-        this.close();
+    private void closeEditor(ActionEvent event) {
+        Stage stage = (Stage) this.rootPane.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
-    void doneClick(ActionEvent event) {
-        if (this.doneHandler != null) {
-            this.doneHandler.call(new Pair(txtName.getText(), codeArea.getText()));
+    private void saveCode(ActionEvent event) {
+        if(this.saveHandler != null){            
+            this.saveHandler.call(new Pair(txtName.getText(), codeArea.getText()));
         }
-        this.close();
+        this.closeEditor(event);
     }
 
 }

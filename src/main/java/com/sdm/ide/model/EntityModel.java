@@ -333,8 +333,12 @@ public final class EntityModel implements Serializable {
         return namedQueries;
     }
 
-    public String getQueryByName(String name) {
-        return this.getNamedQueries().getOrDefault(name, "");
+    public void removeNamedQuery(String name) {
+        this.namedQueries.remove(name);
+    }
+
+    public String getNamedQuery(String name) {
+        return this.namedQueries.getOrDefault(name, "");
     }
 
     public void setNamedQueries(Map<String, String> namedQueries) {
@@ -342,7 +346,7 @@ public final class EntityModel implements Serializable {
     }
 
     public void addNamedQuery(String name, String query) {
-        this.namedQueries.put(name, query);
+            this.namedQueries.put(name, query);
     }
 
     public String getDescription() {

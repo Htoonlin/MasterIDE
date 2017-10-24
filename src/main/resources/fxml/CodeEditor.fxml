@@ -14,7 +14,7 @@
       <StackPane fx:id="editorPane" prefHeight="150.0" prefWidth="200.0" stylesheets="@syntax.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
       <BorderPane prefHeight="48.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <right>
-            <Button mnemonicParsing="false" onAction="#saveSourceCode" prefHeight="32.0" prefWidth="80.0" text="Save" BorderPane.alignment="CENTER">
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#saveSourceCode" prefHeight="32.0" prefWidth="80.0" text="Save" BorderPane.alignment="CENTER">
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                      <image>

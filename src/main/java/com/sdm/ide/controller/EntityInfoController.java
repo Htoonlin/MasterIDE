@@ -6,6 +6,7 @@ import com.sdm.ide.helper.ProjectManager;
 import com.sdm.ide.model.EntityModel;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.collections.FXCollections;
@@ -14,16 +15,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -124,41 +128,65 @@ public class EntityInfoController implements Initializable {
         });
     }
 
-    @FXML
-    private void addQuery(ActionEvent event) {
-    }
-
-    @FXML
-    private void deleteQuery(KeyEvent event) {
-    }
-
-    @FXML
-    private void selectedQuery(MouseEvent event) {
-        String name = lstQueries.getSelectionModel().getSelectedItem();
-        if (event.getButton() != MouseButton.PRIMARY && event.getClickCount() < 2
-                && name.isEmpty()) {
-            return;
-        }
-
+    private void showQueryEditor(String name) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/QueryEditor.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
             QueryEditorController controller = loader.getController();
-            controller.setQuery(name, this.currentEntity.getQueryByName(name));
-            controller.onDone(pair -> {
+            controller.setQuery(name, this.currentEntity.getNamedQuery(name));
+            controller.onSave(pair -> {
+                this.currentEntity.removeNamedQuery(name);
                 this.currentEntity.addNamedQuery(pair.getKey().toString(), pair.getValue().toString());
+                if (!name.equals(pair.getKey())) {
+                    this.lstQueries.getItems().remove(name);
+                    this.lstQueries.getItems().add(pair.getKey().toString());
+                }
+                this.lstQueries.refresh();
             });
 
             Scene dialogScene = new Scene(root, 720, 500);
             dialogScene.getStylesheets().add(getClass().getResource("/fxml/syntax.css").toExternalForm());
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Query Editor");
-            dialogStage.initStyle(StageStyle.DECORATED);
+            dialogStage.initStyle(StageStyle.UTILITY);
             dialogStage.setResizable(true);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.setAlwaysOnTop(true);
             dialogStage.setScene(dialogScene);
             dialogStage.show();
         } catch (IOException ex) {
             AlertDialog.showException(ex);
         }
+    }
+
+    @FXML
+    private void addQuery(ActionEvent event) {
+        String name = this.currentEntity.getEntityName() + ".QUERY_" + this.currentEntity.getNamedQueries().size();
+        this.showQueryEditor(name);
+    }
+
+    @FXML
+    private void deleteQuery(KeyEvent event) {
+        String name = lstQueries.getSelectionModel().getSelectedItem();
+
+        if (!name.isEmpty() && event.getCode() == KeyCode.DELETE) {
+            Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to remove " + name + "?");
+            if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+                this.currentEntity.removeNamedQuery(name);
+                this.lstQueries.getItems().remove(name);
+                this.lstQueries.refresh();
+            }
+        }
+    }
+
+    @FXML
+    private void selectedQuery(MouseEvent event) {
+        String name = lstQueries.getSelectionModel().getSelectedItem();
+        if (event.getButton() != MouseButton.PRIMARY
+                || event.getClickCount() < 2 || name.isEmpty()) {
+            return;
+        }
+
+        this.showQueryEditor(name);
     }
 }

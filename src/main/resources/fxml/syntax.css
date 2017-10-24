@@ -5,6 +5,9 @@
 .keyword {
     -fx-fill: blue;
 }
+.param{
+    -fx-fill: #ff6600;
+}
 .annotation{
     -fx-fill: #009999;
 }
