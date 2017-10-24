@@ -147,6 +147,28 @@ public class ParseEntityTask extends Task<EntityModel> {
             });
         });
 
+        //Load NamedQueries
+        entityObject.getAnnotationByName("NamedQueries").ifPresent(annotation -> {
+            if (annotation instanceof SingleMemberAnnotationExpr) {
+                SingleMemberAnnotationExpr queries = (SingleMemberAnnotationExpr) annotation;
+                queries.getMemberValue().getChildNodesByType(NormalAnnotationExpr.class).forEach(namedQuery -> {
+                    loadNamedQuery(namedQuery);
+                });
+            } else if (annotation instanceof NormalAnnotationExpr) {
+                NormalAnnotationExpr queries = (NormalAnnotationExpr) annotation;
+                queries.getPairs().forEach(pair -> {
+                    if (pair.getNameAsString().equals("value")) {
+                        pair.getValue().getChildNodesByType(NormalAnnotationExpr.class).forEach(namedQuery -> {
+                            loadNamedQuery(namedQuery);
+                        });
+                    }
+                });
+            }
+        });
+
+        //Load NamedQuery 
+        entityObject.getAnnotationByName("NamedQuery").ifPresent(annotation -> loadNamedQuery((NormalAnnotationExpr) annotation));
+
         //Load Search Field
         entityObject.getFieldByName("search").ifPresent(field -> {
             field.getAnnotationByName("Formula").ifPresent(annotation -> {
@@ -195,6 +217,24 @@ public class ParseEntityTask extends Task<EntityModel> {
                 this.propertyAnalysis(property, method);
             }
         });
+    }
+
+    private void loadNamedQuery(NormalAnnotationExpr annotation) {
+        String name = "";
+        String query = "";
+        for (MemberValuePair pair : annotation.getPairs()) {
+            if (pair.getNameAsString().equals("name")) {
+                name = pair.getValue().toString();
+            } else if (pair.getNameAsString().equals("query")) {
+                query = pair.getValue().toString();
+            }
+        }
+
+        if (name.length() > 2 && query.length() > 2) {
+            this.showMessage("Loading query " + name);
+            this.entity.addNamedQuery(name.substring(1, name.length() - 1),
+                    query.substring(1, query.length() - 1));
+        }
     }
 
     private void loadSearchFields(String formula) {

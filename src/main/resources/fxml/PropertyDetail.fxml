@@ -49,6 +49,7 @@
                   <TextArea fx:id="txtDescription" prefHeight="80.0" prefWidth="200.0" promptText="Description" />
                         <Separator prefWidth="200.0" />
                         <TextField fx:id="txtColumnName" promptText="Column Name" />
+                          <ComboBox fx:id="cboUIInputType" prefWidth="320.0" promptText="Input Type" />
                         <TextField fx:id="txtColumnDef" prefWidth="250.0" promptText="Column Definition" />
                         <GridPane prefHeight="30.0" prefWidth="298.0">
                             <columnConstraints>
@@ -82,9 +83,6 @@
                         <Separator prefWidth="200.0" />
                         <TextField fx:id="txtUILabel" promptText="Label" />
                         <HBox spacing="5.0">
-                            <children>
-                                <ComboBox fx:id="cboUIInputType" prefWidth="320.0" promptText="Input Type" />
-                            </children>
                             <padding>
                                 <Insets bottom="5.0" top="5.0" />
                             </padding>
@@ -118,7 +116,7 @@
                         </Button>
                   <TitledPane collapsible="false" text="Property Validations">
                      <content>
-                              <ListView fx:id="lstAnnotations" minHeight="-Infinity" onKeyPressed="#deleteValidationRule" onMouseClicked="#selectedItem" prefHeight="150.0" />
+                              <ListView fx:id="lstAnnotations" minHeight="-Infinity" onKeyPressed="#deleteValidationRule" onMouseClicked="#selectedRule" prefHeight="150.0" />
                      </content>
                   </TitledPane>
                     </children>

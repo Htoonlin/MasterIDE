@@ -5,26 +5,21 @@
  */
 package com.sdm.ide.controller;
 
-import com.sdm.ide.component.AlertDialog;
-import com.sdm.ide.model.EntityModel;
-import java.io.IOException;
+import com.sdm.ide.component.Callback;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -36,29 +31,26 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  *
  * @author htoonlin
  */
-public class CodeEditorController implements Initializable {
+public class QueryEditorController implements Initializable {
 
-    private final String[] JAVA_KEYWORDS = new String[]{
-        "abstract", "assert", "boolean", "break", "byte",
-        "case", "catch", "char", "class", "const",
-        "continue", "default", "do", "double", "else",
-        "enum", "extends", "final", "finally", "float",
-        "for", "goto", "if", "implements", "import",
-        "instanceof", "int", "interface", "long", "native",
-        "new", "package", "private", "protected", "public",
-        "return", "short", "static", "strictfp", "super",
-        "switch", "synchronized", "this", "throw", "throws",
-        "transient", "try", "void", "volatile", "while"
+    private final String[] HQL_KEYWORDS = new String[]{
+        "all", "any", "and", "as", "asc", "avg", "between", "class",
+        "count", "delete", "desc", "dot", "distinct", "elements", "escape",
+        "exists", "false", "fetch", "from", "full", "group", "having", "in",
+        "indices", "inner", "insert", "into", "is", "join", "left", "like",
+        "max", "min", "new", "not", "null", "or", "order", "outer",
+        "properties", "right", "select", "set", "some", "sum", "true",
+        "update", "versioned", "where", "nulls", "first", "last"
     };
 
-    private final String KEYWORD_PATTERN = "\\b(" + String.join("|", JAVA_KEYWORDS) + ")\\b";
+    private final String KEYWORD_PATTERN = "\\b(?" + String.join("|?", HQL_KEYWORDS) + ")\\b";
     private final String PAREN_PATTERN = "\\(|\\)";
     private final String BRACE_PATTERN = "\\{|\\}";
     private final String BRACKET_PATTERN = "\\[|\\]";
     private final String SEMICOLON_PATTERN = "\\;";
     private final String STRING_PATTERN = "('|\")([^'\"\\\\]|\\\\.)*('\")";
     private final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
-    private final String ANNOTATION_PATTERN = "@[a-zA-Z0-9_]+";
+    private final String PARAM_PATTERN = "\\b:\\w+\\b";
 
     private final Pattern PATTERN = Pattern.compile(
             "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
@@ -68,8 +60,41 @@ public class CodeEditorController implements Initializable {
             + "|(?<SEMICOLON>" + SEMICOLON_PATTERN + ")"
             + "|(?<STRING>" + STRING_PATTERN + ")"
             + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
-            + "|(?<ANNOTATION>" + ANNOTATION_PATTERN + ")"
+            + "|(?<PARAM>" + PARAM_PATTERN + ")"
     );
+
+    @FXML
+    private StackPane editorPane;
+
+    @FXML
+    private AnchorPane rootPane;
+
+    @FXML
+    private TextField txtName;
+
+    private CodeArea codeArea;
+
+    private Callback<Pair> doneHandler;
+
+    private Callback<Pair> cancelHandler;
+
+    public void setQuery(String title, String code) {
+        codeArea.replaceText(0, 0, code);
+        txtName.setText(title);
+    }
+
+    public void onDone(Callback<Pair> handler) {
+        this.doneHandler = handler;
+    }
+
+    public void onCancel(Callback<Pair> handler) {
+        this.cancelHandler = handler;
+    }
+
+    private void close() {
+        Stage stage = (Stage) this.rootPane.getScene().getWindow();
+        stage.close();
+    }
 
     public StyleSpans<Collection<String>> highlightNow(String source) {
         Matcher matcher = PATTERN.matcher(source);
@@ -85,7 +110,7 @@ public class CodeEditorController implements Initializable {
                     : matcher.group("SEMICOLON") != null ? "semicolon"
                     : matcher.group("STRING") != null ? "string"
                     : matcher.group("COMMENT") != null ? "comment"
-                    : matcher.group("ANNOTATION") != null ? "annotation"
+                    : matcher.group("PARAM") != null ? "annotation"
                     : null;
             /* never happens */
             assert styleClass != null;
@@ -97,28 +122,9 @@ public class CodeEditorController implements Initializable {
         return spansBuilder.create();
     }
 
-    @FXML
-    private StackPane editorPane;
-
-    private CodeArea codeArea;
-
-    private EntityModel entity;
-
-    @FXML
-    private Label lblTitle;
-    @FXML
-    private AnchorPane rootPane;
-
-    private String openedText;
-
-    public void setEntity(EntityModel entity) throws IOException {
-        this.entity = entity;
-        this.openedText = entity.getCompiledObject().toString();
-        codeArea.replaceText(0, 0, openedText);
-
-        lblTitle.setText(entity.getModuleName() + entity.getName());
-    }
-
+    /**
+     * Initializes the controller class.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         codeArea = new CodeArea();
@@ -136,26 +142,20 @@ public class CodeEditorController implements Initializable {
     }
 
     @FXML
-    private void closeEditor(ActionEvent event) {
-        if (!this.openedText.equals(codeArea.getText())) {
-            Optional<ButtonType> result = AlertDialog.showQuestion("Source code is modified. Do you want to save?");
-            if (result.isPresent() && result.get().equals(ButtonType.YES)) {
-                saveSourceCode(event);
-            }
+    void cancelClick(ActionEvent event) {
+        if (this.cancelHandler != null) {
+            this.cancelHandler.call(null);
         }
-        Stage stage = (Stage) this.rootPane.getScene().getWindow();
-        stage.close();
+
+        this.close();
     }
 
     @FXML
-    private void saveSourceCode(ActionEvent event) {
-        try {
-            Files.write(entity.getFile().toPath(), codeArea.getText().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-            this.openedText = codeArea.getText();
-            AlertDialog.showInfo("Save successful.");
-        } catch (IOException ex) {
-            AlertDialog.showException(ex);
+    void doneClick(ActionEvent event) {
+        if (this.doneHandler != null) {
+            this.doneHandler.call(new Pair(txtName.getText(), codeArea.getText()));
         }
+        this.close();
     }
 
 }

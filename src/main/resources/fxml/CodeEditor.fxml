@@ -11,7 +11,7 @@
 
 <AnchorPane id="AnchorPane" fx:id="rootPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sdm.ide.controller.CodeEditorController">
    <children>
-      <StackPane fx:id="editorPane" prefHeight="150.0" prefWidth="200.0" stylesheets="@java-keywords.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
+      <StackPane fx:id="editorPane" prefHeight="150.0" prefWidth="200.0" stylesheets="@syntax.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0" />
       <BorderPane prefHeight="48.0" styleClass="tool-bar" stylesheets="@main.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <right>
             <Button mnemonicParsing="false" onAction="#saveSourceCode" prefHeight="32.0" prefWidth="80.0" text="Save" BorderPane.alignment="CENTER">

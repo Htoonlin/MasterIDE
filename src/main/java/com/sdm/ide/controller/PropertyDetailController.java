@@ -264,14 +264,6 @@ public class PropertyDetailController implements Initializable {
     }
 
     @FXML
-    void selectedItem(MouseEvent event) {
-        AnnotationExpr model = lstAnnotations.getSelectionModel().getSelectedItem();
-        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && model != null) {
-            this.showValidation(model, true);
-        }
-    }
-
-    @FXML
     void changePropertyType(ActionEvent event) {
         String javaType = cboPropertyType.getValue();
         //MM Font allow string type only
@@ -347,6 +339,14 @@ public class PropertyDetailController implements Initializable {
             });
         } catch (Exception e) {
             AlertDialog.showException(e);
+        }
+    }
+
+    @FXML
+    private void selectedRule(MouseEvent event) {
+        AnnotationExpr model = lstAnnotations.getSelectionModel().getSelectedItem();
+        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && model != null) {
+            this.showValidation(model, true);
         }
     }
 }

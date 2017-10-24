@@ -191,7 +191,7 @@ public class EntityManagerController implements Initializable {
             controller.setEntity(currentEntity);
 
             Scene dialogScene = new Scene(root, 720, 500);
-            dialogScene.getStylesheets().add(getClass().getResource("/fxml/java-keywords.css").toExternalForm());
+            dialogScene.getStylesheets().add(getClass().getResource("/fxml/syntax.css").toExternalForm());
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Code Editor");
             dialogStage.initStyle(StageStyle.DECORATED);

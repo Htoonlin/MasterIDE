@@ -8,7 +8,9 @@ import com.sdm.ide.helper.ProjectManager;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
@@ -35,6 +37,7 @@ public final class EntityModel implements Serializable {
     private Set<String> searchFields;
     private Set<PropertyModel> properties;
     private PropertyModel primaryProperty;
+    private Map<String, String> namedQueries;
 
     //Java Info
     private File file;
@@ -54,6 +57,7 @@ public final class EntityModel implements Serializable {
         this.description = new SimpleStringProperty("");
         this.searchFields = new HashSet<>();
         this.properties = new HashSet<>();
+        this.namedQueries = new HashMap<>();
         this.importedObjects = new HashSet<>(Arrays.asList(
                 "java.util.*",
                 "java.math.*",
@@ -323,6 +327,22 @@ public final class EntityModel implements Serializable {
             }
         }
         this.importedObjects.add(importedObject);
+    }
+
+    public Map<String, String> getNamedQueries() {
+        return namedQueries;
+    }
+
+    public String getQueryByName(String name) {
+        return this.getNamedQueries().getOrDefault(name, "");
+    }
+
+    public void setNamedQueries(Map<String, String> namedQueries) {
+        this.namedQueries = namedQueries;
+    }
+
+    public void addNamedQuery(String name, String query) {
+        this.namedQueries.put(name, query);
     }
 
     public String getDescription() {

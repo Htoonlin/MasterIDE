@@ -14,6 +14,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -47,13 +48,13 @@ import javax.xml.transform.TransformerException;
 public class WriteEntityTask extends Task<Boolean> {
 
     private final EntityModel entity;
-
-    private Set<String> processAnnotations;
+    private Set<String> propertyAnnotations;
 
     public WriteEntityTask(EntityModel entity) throws Exception {
         super();
-        this.processAnnotations = new HashSet(ValidationManager.getInstance().getValidations().keySet());
-        Collections.addAll(processAnnotations,
+
+        this.propertyAnnotations = new HashSet(ValidationManager.getInstance().getValidations().keySet());
+        Collections.addAll(propertyAnnotations,
                 "UIStructure", "Column",
                 "Audited", "NotAudited",
                 "JsonIgnore",
@@ -65,7 +66,7 @@ public class WriteEntityTask extends Task<Boolean> {
             if (anno.equals(PropertyModel.Relation.None)) {
                 continue;
             }
-            this.processAnnotations.add(anno.toString());
+            this.propertyAnnotations.add(anno.toString());
         }
 
         this.entity = entity;
@@ -80,15 +81,8 @@ public class WriteEntityTask extends Task<Boolean> {
         }
     }
 
-    private void cleanEntityAnnotations(ClassOrInterfaceDeclaration entityObject) {
-        entityObject.getAnnotationByName("Audited").ifPresent(anno -> entityObject.remove(anno));
-        entityObject.getAnnotationByName("DynamicUpdate").ifPresent(anno -> entityObject.remove(anno));
-        entityObject.getAnnotationByName("Entity").ifPresent(anno -> entityObject.remove(anno));
-        entityObject.getAnnotationByName("Table").ifPresent(anno -> entityObject.remove(anno));
-    }
-
     private void initEntity() {
-        showMessage("Creating new entity.");
+        showMessage("Initiating entity.");
         CompilationUnit cu = this.entity.getCompiledObject();
         if (cu == null) {
             cu = new CompilationUnit(entity.getModuleName());
@@ -147,6 +141,11 @@ public class WriteEntityTask extends Task<Boolean> {
         tableAnnotation.addPair("name", "\"" + entity.getTableName() + "\"");
         entityObject.addAnnotation(tableAnnotation);
 
+        //Add Named Queries
+        if (this.entity.getNamedQueries() != null && this.entity.getNamedQueries().size() > 0) {
+            this.writeQueries(entityObject);
+        }
+
         //Add Generated SerialVersionUID
         if (!entityObject.getFieldByName("serialVersionUID").isPresent()) {
             this.generateSerializeField(entityObject);
@@ -154,7 +153,22 @@ public class WriteEntityTask extends Task<Boolean> {
 
         this.entity.setCompiledObject(cu);
         this.entity.setEntityObject(entityObject);
-        showMessage("Created blank entity");
+        this.showMessage("Successfully created the entity.");
+    }
+
+    private void writeQueries(ClassOrInterfaceDeclaration entityObject) {
+        this.showMessage("Add => @NamedQueries");
+        ArrayInitializerExpr queriesExpr = new ArrayInitializerExpr();
+        for (String name : this.entity.getNamedQueries().keySet()) {
+            String query = this.entity.getQueryByName(name);
+            NormalAnnotationExpr namedQuery = new NormalAnnotationExpr();
+            namedQuery.setName("NamedQuery");
+            namedQuery.addPair("name", "\"" + name + "\"");
+            namedQuery.addPair("query", "\"" + query + "\"");
+            queriesExpr.getValues().add(namedQuery);
+        }
+        entityObject.addSingleMemberAnnotation("NamedQueries", queriesExpr);
+
     }
 
     private void writeEntityComment(ClassOrInterfaceDeclaration entityObject) {
@@ -244,14 +258,29 @@ public class WriteEntityTask extends Task<Boolean> {
         }
     }
 
-    private void removeAnnotation(ClassOrInterfaceDeclaration entityObject, String propertyName) {
+    private void cleanEntityAnnotations(ClassOrInterfaceDeclaration entityObject) {
+        Set<String> processableAnnotations = new HashSet<>();
+        Collections.addAll(processableAnnotations,
+                "Audited", "DynamicUpdate",
+                "Entity", "Table",
+                "NamedQueries", "NamedQuery");
+        List<Node> removeList = new ArrayList<>();
+        entityObject.getAnnotations().forEach(annotation -> {
+            if (processableAnnotations.contains(annotation.getNameAsString())) {
+                removeList.add(annotation);
+            }
+        });
+        removeList.forEach(node -> entityObject.remove(node));
+    }
+
+    private void cleanPropertyAnnotation(ClassOrInterfaceDeclaration entityObject, String propertyName) {
         //Field clean
         entityObject.getFieldByName(propertyName).ifPresent(field -> {
             List<Node> removeList = new ArrayList<>();
             field.getAnnotations().forEach(anno -> {
                 if (anno != null) {
                     String annoName = anno.getNameAsString();
-                    if (processAnnotations.contains(annoName)) {
+                    if (propertyAnnotations.contains(annoName)) {
                         removeList.add(anno);
                     }
                 } else {
@@ -267,7 +296,7 @@ public class WriteEntityTask extends Task<Boolean> {
             List<Node> removeList = new ArrayList<>();
             method.getAnnotations().forEach(anno -> {
                 String annoName = anno.getNameAsString();
-                if (processAnnotations.contains(annoName)) {
+                if (propertyAnnotations.contains(annoName)) {
                     removeList.add(anno);
                 }
             });
@@ -280,7 +309,7 @@ public class WriteEntityTask extends Task<Boolean> {
             List<Node> removeList = new ArrayList<>();
             method.getAnnotations().forEach(anno -> {
                 String annoName = anno.getNameAsString();
-                if (processAnnotations.contains(annoName)) {
+                if (propertyAnnotations.contains(annoName)) {
                     removeList.add(anno);
                 }
             });
@@ -297,7 +326,7 @@ public class WriteEntityTask extends Task<Boolean> {
         } else {
             this.showMessage("Clean annotations of " + property.getName() + ".");
             //Clean annotations
-            this.removeAnnotation(entityObject, property.getName());
+            this.cleanPropertyAnnotation(entityObject, property.getName());
         }
 
         //Write comment
