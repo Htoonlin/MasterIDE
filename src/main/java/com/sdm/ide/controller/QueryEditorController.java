@@ -32,8 +32,8 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  * @author htoonlin
  */
 public class QueryEditorController implements Initializable {
-    
-     private final String[] HQL_KEYWORDS = new String[]{
+
+    private final String[] HQL_KEYWORDS = new String[]{
         "all", "any", "and", "as", "asc", "avg", "between", "class",
         "count", "delete", "desc", "dot", "distinct", "elements", "escape",
         "exists", "false", "fetch", "from", "full", "group", "having", "in",
@@ -99,15 +99,15 @@ public class QueryEditorController implements Initializable {
     private TextField txtName;
 
     private CodeArea codeArea;
-    
+
     private Callback<Pair> saveHandler;
 
     public void setQuery(String title, String code) {
         codeArea.replaceText(0, 0, code);
         txtName.setText(title);
     }
-    
-    public void onSave(Callback<Pair> handler){
+
+    public void onSave(Callback<Pair> handler) {
         this.saveHandler = handler;
     }
 
@@ -116,7 +116,6 @@ public class QueryEditorController implements Initializable {
         stage.close();
     }
 
-
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         codeArea = new CodeArea();
@@ -124,7 +123,7 @@ public class QueryEditorController implements Initializable {
 
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .subscribe(change -> {          
+                .subscribe(change -> {
                     codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
                 });
 
@@ -139,7 +138,7 @@ public class QueryEditorController implements Initializable {
 
     @FXML
     private void saveCode(ActionEvent event) {
-        if(this.saveHandler != null){            
+        if (this.saveHandler != null) {
             this.saveHandler.call(new Pair(txtName.getText(), codeArea.getText()));
         }
         this.closeEditor(event);

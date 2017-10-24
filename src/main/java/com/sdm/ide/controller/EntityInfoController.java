@@ -161,7 +161,7 @@ public class EntityInfoController implements Initializable {
 
     @FXML
     private void addQuery(ActionEvent event) {
-        String name = this.currentEntity.getEntityName() + ".QUERY_" + this.currentEntity.getNamedQueries().size();
+        String name = "QUERY_" + this.currentEntity.getNamedQueries().size();
         this.showQueryEditor(name);
     }
 
@@ -169,7 +169,8 @@ public class EntityInfoController implements Initializable {
     private void deleteQuery(KeyEvent event) {
         String name = lstQueries.getSelectionModel().getSelectedItem();
 
-        if (!name.isEmpty() && event.getCode() == KeyCode.DELETE) {
+        if (!name.isEmpty()
+                && (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE)) {
             Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to remove " + name + "?");
             if (result.isPresent() && result.get().equals(ButtonType.YES)) {
                 this.currentEntity.removeNamedQuery(name);

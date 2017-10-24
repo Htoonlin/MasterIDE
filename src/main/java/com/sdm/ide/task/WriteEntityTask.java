@@ -161,6 +161,11 @@ public class WriteEntityTask extends Task<Boolean> {
         ArrayInitializerExpr queriesExpr = new ArrayInitializerExpr();
         for (String name : this.entity.getNamedQueries().keySet()) {
             String query = this.entity.getNamedQuery(name);
+
+            if (!name.startsWith(this.entity.getName())) {
+                name = this.entity.getName() + "." + name;
+            }
+
             NormalAnnotationExpr namedQuery = new NormalAnnotationExpr();
             namedQuery.setName("NamedQuery");
             namedQuery.addPair("name", "\"" + name + "\"");
