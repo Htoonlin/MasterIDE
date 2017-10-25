@@ -10,15 +10,19 @@ import com.sdm.ide.helper.HibernateManager;
 import com.sdm.ide.model.DatabaseModel;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 
 /**
@@ -67,9 +71,23 @@ public class HibernateSettingController implements Initializable {
         try {
             HibernateManager.getInstance().setDBInfo(this.dbModel);
             HibernateManager.getInstance().writeConfig();
+            HibernateManager.getInstance().reload();
             AlertDialog.showInfo("Save successful.");
         } catch (Exception e) {
             AlertDialog.showException(e);
+        }
+    }
+
+    @FXML
+    private void removeSelectedEntity(KeyEvent event) {
+        String name = lstEntities.getSelectionModel().getSelectedItem();
+
+        if (!name.isEmpty()
+                && (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE)) {
+            Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to remove " + name + "?");
+            if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+                HibernateManager.getInstance().removeMapping(name);
+            }
         }
     }
 

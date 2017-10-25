@@ -55,6 +55,12 @@ public class HibernateManager {
         this.doc = docBuilder.parse(hibernateFile);
     }
 
+    public void reload() throws IOException, ParserConfigurationException, SAXException {
+        if (this.hibernateFile != null) {
+            this.load(this.hibernateFile);
+        }
+    }
+
     public File getFile() {
         return this.hibernateFile;
     }
