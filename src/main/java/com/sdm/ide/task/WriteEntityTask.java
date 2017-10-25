@@ -346,7 +346,10 @@ public class WriteEntityTask extends Task<Boolean> {
 
             if (property.getType().equalsIgnoreCase("int")
                     || property.getType().equalsIgnoreCase("long")) {
-                field.addMarkerAnnotation("GeneratedValue");
+                NormalAnnotationExpr generated = new NormalAnnotationExpr();
+                generated.setName("GeneratedValue");
+                generated.addPair("strategy", "GenerationType.IDENTITY");
+                field.addAnnotation(generated);
             }
 
             if (this.entity.getPrimaryProperty() == null) {
