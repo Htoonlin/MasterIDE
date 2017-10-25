@@ -232,7 +232,7 @@ public class ParseEntityTask extends Task<EntityModel> {
 
         if (name.length() > 2 && query.length() > 2) {
             this.showMessage("Loading query " + name);
-            name = name.substring(this.entity.getName().length() + 2, name.length() - 1);
+            name = name.substring(this.entity.getEntityName().length() + 2, name.length() - 1);
             this.entity.addNamedQuery(name, query.substring(1, query.length() - 1));
         }
     }
