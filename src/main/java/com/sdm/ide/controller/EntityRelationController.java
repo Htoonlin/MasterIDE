@@ -98,13 +98,13 @@ public class EntityRelationController implements Initializable {
         Name source = JavaParser.parseName(cboSource.getValue());
         switch (cboRelations.getValue()) {
             case ManyToMany:
-            case ManyToOne:
+            case OneToMany:
                 property.setType("Set<" + source.getIdentifier() + ">");
                 property.setInputType("objectlist");
                 property.setColumnDef("");
                 break;
             case OneToOne:
-            case OneToMany:
+            case ManyToOne:
                 property.setType(source.getIdentifier());
                 property.setInputType("object");
                 property.setColumnDef("");

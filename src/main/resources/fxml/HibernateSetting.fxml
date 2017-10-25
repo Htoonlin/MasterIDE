@@ -64,7 +64,7 @@
         </HBox>
       <TitledPane collapsible="false" layoutX="14.0" layoutY="238.0" prefHeight="250.0" prefWidth="380.0" text="Mapped Entities" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="250.0">
          <content>
-            <ListView fx:id="lstEntities" prefHeight="200.0" prefWidth="250.0" />
+            <ListView fx:id="lstEntities" onKeyPressed="#removeSelectedEntity" prefHeight="200.0" prefWidth="250.0" />
          </content>
       </TitledPane>
     </children>
