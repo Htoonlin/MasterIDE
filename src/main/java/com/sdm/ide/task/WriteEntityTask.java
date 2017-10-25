@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -59,7 +60,8 @@ public class WriteEntityTask extends Task<Boolean> {
                 "Audited", "NotAudited",
                 "JsonIgnore",
                 "Id", "GeneratedValue",
-                "JoinColumn", "JoinTable"
+                "JoinColumn", "JoinTable",
+                "Temporal"
         );
 
         for (PropertyModel.Relation anno : PropertyModel.Relation.values()) {
@@ -383,6 +385,9 @@ public class WriteEntityTask extends Task<Boolean> {
             this.writeColumnAnnotation(field, property);
         }
 
+        //Create @Temporal on DATE Types
+        this.writeTemporal(field, property);
+
         //Check search field
         if (property.isSearchable()) {
             entity.addSearchField(property.getColumnName());
@@ -421,10 +426,27 @@ public class WriteEntityTask extends Task<Boolean> {
         NormalAnnotationExpr colAnnotation = new NormalAnnotationExpr();
         colAnnotation.setName("Column");
         colAnnotation.addPair("name", "\"" + property.getColumnName() + "\"");
-        colAnnotation.addPair("nullable", Boolean.toString(!property.isRequired()));
+        if (!property.isPrimary()) {
+            colAnnotation.addPair("nullable", Boolean.toString(!property.isRequired()));
+        }
         colAnnotation.addPair("columnDefinition", "\"" + property.getColumnDef() + "\"");
 
         field.addAnnotation(colAnnotation);
+    }
+
+    private void writeTemporal(FieldDeclaration field, PropertyModel property) {
+        List<String> temporalTypes = Arrays.asList("DATETIME", "DATE", "TIME", "TIMESTAMP");
+        if (!temporalTypes.contains(property.getInputType().toUpperCase())) {
+            return;
+        }
+
+        String value = "TemporalType.TIMESTAMP";
+        if (property.getInputType().equalsIgnoreCase("DATE")) {
+            value = "TemporalType.DATE";
+        } else if (property.getInputType().equalsIgnoreCase("TIME")) {
+            value = "TemporalType.TIME";
+        }
+        field.addSingleMemberAnnotation("Temporal", value);
     }
 
     private CompilationUnit writeNewResourceFile(String resource) throws IOException {
