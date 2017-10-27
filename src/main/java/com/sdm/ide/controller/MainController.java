@@ -242,7 +242,7 @@ public class MainController implements Initializable {
                                 AlertDialog.showWarning("Can't create new entity file.");
                             }
 
-                            ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name);
+                            ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name + "Entity");
                             TreeItem<ProjectTreeModel> entityTree = new TreeItem<>(entityModel,
                                     new ImageView(entityModel.getImage()));
                             item.getParent().getChildren().add(entityTree);
@@ -286,7 +286,7 @@ public class MainController implements Initializable {
                         File entityFile = new File(entityPath + File.separator + name + "Entity.java");
                         try {
                             if (entityFile.createNewFile()) {
-                                ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name);
+                                ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name + "Entity");
                                 TreeItem<ProjectTreeModel> entityTree = new TreeItem<>(entityModel,
                                         new ImageView(entityModel.getImage()));
                                 switch (model.getType()) {
