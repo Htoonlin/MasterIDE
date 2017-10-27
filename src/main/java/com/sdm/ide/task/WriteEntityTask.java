@@ -75,12 +75,7 @@ public class WriteEntityTask extends Task<Boolean> {
     }
 
     private void showMessage(String message) {
-        try {
-            updateMessage(message);
-            Thread.sleep(50);
-        } catch (InterruptedException ex) {
-            updateMessage(message);
-        }
+        updateMessage(message);
     }
 
     private void initEntity() {

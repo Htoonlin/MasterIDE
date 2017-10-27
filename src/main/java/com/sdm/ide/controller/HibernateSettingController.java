@@ -87,6 +87,7 @@ public class HibernateSettingController implements Initializable {
             Optional<ButtonType> result = AlertDialog.showQuestion("Are you sure to remove " + name + "?");
             if (result.isPresent() && result.get().equals(ButtonType.YES)) {
                 HibernateManager.getInstance().removeMapping(name);
+                lstEntities.getItems().remove(name);                
             }
         }
     }

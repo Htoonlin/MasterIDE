@@ -230,8 +230,8 @@ public class MainController implements Initializable {
                 Optional<String> result = AlertDialog.showInput("Enter entity name",
                         new Image(getClass().getResourceAsStream("/image/entity.png"), 28, 28, true, true));
                 result.ifPresent((name) -> {
-                    if (ProjectManager.validJavaClass(name) && name.endsWith("Entity")) {
-                        File entityFile = new File(model.getFile().getParent() + File.separatorChar + name + ".java");
+                    if (ProjectManager.validJavaClass(name) && !name.endsWith("Entity")) {
+                        File entityFile = new File(model.getFile().getParent() + File.separatorChar + name + "Entity.java");
                         try {
                             //Clone File
                             if (entityFile.createNewFile()) {
@@ -282,8 +282,8 @@ public class MainController implements Initializable {
                         new Image(getClass().getResourceAsStream("/image/entity.png"), 28, 28, true, true));
                 final String entityPath = entityDir.getPath();
                 result.ifPresent((name) -> {
-                    if (ProjectManager.validJavaClass(name) && name.endsWith("Entity")) {
-                        File entityFile = new File(entityPath + File.separator + name + ".java");
+                    if (ProjectManager.validJavaClass(name) && !name.endsWith("Entity")) {
+                        File entityFile = new File(entityPath + File.separator + name + "Entity.java");
                         try {
                             if (entityFile.createNewFile()) {
                                 ProjectTreeModel entityModel = new ProjectTreeModel(Type.ENTITY, entityFile, name);
