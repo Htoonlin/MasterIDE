@@ -6,23 +6,18 @@
 package com.sdm.ide.controller;
 
 import com.sdm.ide.component.Callback;
-import com.sdm.ide.helper.BoundsPopup;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -30,10 +25,6 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
-import org.reactfx.EventStream;
-import org.reactfx.EventStreams;
-import static org.reactfx.EventStreams.nonNullValuesOf;
-import org.reactfx.Subscription;
 
 /**
  * FXML Controller class
@@ -106,50 +97,11 @@ public class QueryEditorController implements Initializable {
 
     @FXML
     private TextField txtName;
-
-    private VirtualizedScrollPane vsPane;
+    
     private CodeArea codeArea;
 
     private Callback<Pair> saveHandler;
 
-    public void loadPopup(Stage primaryStage){
-        //Start Caret Popup                
-        BoundsPopup caretPopup = new BoundsPopup("Hello", primaryStage);
-        VBox caretOptions = createPopupOptions(caretPopup, "Show/Hide caret-based popup", "Show/Hide popup even when caret is out of viewport");
-
-        EventStream<Optional<Bounds>> caretBounds = nonNullValuesOf(codeArea.caretBoundsProperty());
-        Subscription cBoundsSub = feedVisibilityToLabelText(caretBounds, caretPopup, "Caret");
-
-        double caretXOffset = 0;
-        double caretYOffset = 0;
-
-        Subscription caretPopupSub = EventStreams.combine(caretBounds, caretPopup.outsideViewportValues())
-                .subscribe(tuple3 -> {
-                    Optional<Bounds> opt = tuple3._1;
-                    boolean showPopupWhenCaretOutside = tuple3._2;
-
-                    if (opt.isPresent()) {
-                        Bounds b = opt.get();
-                        caretPopup.setX(b.getMaxX() + caretXOffset);
-                        caretPopup.setY(b.getMaxY() + caretYOffset);
-
-                        if (caretPopup.isHiddenTemporarily()) {
-                            caretPopup.show(primaryStage);
-                            caretPopup.setHideTemporarily(false);
-                        }
-
-                    } else if (!showPopupWhenCaretOutside) {
-                        caretPopup.hide();
-                        caretPopup.setHideTemporarily(true);
-                    }
-                });
-
-        Subscription caretSubs = caretPopupSub.and(cBoundsSub);
-        caretPopup.show(primaryStage);        
-        codeArea.moveTo(0);
-        codeArea.requestFollowCaret();
-    }
-    
     public void setQuery(String title, String code) {        
         codeArea.replaceText(0, 0, code);
         txtName.setText(title);
@@ -157,25 +109,6 @@ public class QueryEditorController implements Initializable {
 
     public void onSave(Callback<Pair> handler) {
         this.saveHandler = handler;
-    }
-
-    private void close() {
-        Stage stage = (Stage) this.rootPane.getScene().getWindow();
-        stage.close();
-    }
-
-    private VBox createPopupOptions(BoundsPopup p, String showHideButtonText, String toggleViewportText) {
-        Button showOrHidePopup = new Button(showHideButtonText);
-        showOrHidePopup.setOnAction(ae -> p.invertVisibility());
-        Button toggleOutOfViewportOption = new Button(toggleViewportText);
-        toggleOutOfViewportOption.setOnAction(ae -> p.invertViewportOption());
-        return new VBox(showOrHidePopup, toggleOutOfViewportOption);
-    }
-
-    private Subscription feedVisibilityToLabelText(EventStream<Optional<Bounds>> boundsStream, BoundsPopup popup, String item) {
-        return boundsStream
-                .map(o -> o.isPresent() ? " is " : " is not ")
-                .subscribe(visibilityStatus -> popup.setText(item + visibilityStatus + "within the viewport"));
     }
 
     @Override
@@ -188,9 +121,8 @@ public class QueryEditorController implements Initializable {
                 .subscribe(change -> {
                     codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
                 });
-
-        vsPane = new VirtualizedScrollPane<>(codeArea);
-        this.editorPane.getChildren().add(vsPane);
+        
+        this.editorPane.getChildren().add(new VirtualizedScrollPane<>(codeArea));
     }
 
     @FXML
