@@ -8,6 +8,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -34,6 +35,7 @@ public class IDE extends Application {
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/fxml/main.css").toExternalForm());
+            primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/image/logo.png")));
             primaryStage.setMaximized(true);
             primaryStage.setScene(scene);
             primaryStage.setTitle("MasterIDE");

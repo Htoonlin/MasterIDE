@@ -22,6 +22,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -132,7 +133,7 @@ public class EntityInfoController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/QueryEditor.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
-            QueryEditorController controller = loader.getController();
+            QueryEditorController controller = loader.getController();            
             controller.setQuery(name, this.currentEntity.getNamedQuery(name));
             controller.onSave(pair -> {
                 this.currentEntity.removeNamedQuery(name);
@@ -148,12 +149,13 @@ public class EntityInfoController implements Initializable {
             dialogScene.getStylesheets().add(getClass().getResource("/fxml/syntax.css").toExternalForm());
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Query Editor");
+            dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/image/write_query.png")));
             dialogStage.initStyle(StageStyle.UTILITY);
             dialogStage.setResizable(true);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
             dialogStage.setAlwaysOnTop(true);
             dialogStage.setScene(dialogScene);
-            dialogStage.show();
+            dialogStage.show();         
         } catch (IOException ex) {
             AlertDialog.showException(ex);
         }
