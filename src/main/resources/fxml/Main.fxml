@@ -97,6 +97,18 @@
                         <Tooltip text="Open existing project" />
                     </tooltip>
                 </Button>
+            <Button contentDisplay="TOP" graphicTextGap="1.0" layoutX="206.0" layoutY="15.0" mnemonicParsing="false" onAction="#packProject" prefHeight="50.0" prefWidth="120.0" text="Pack (.war)">
+               <graphic>
+                  <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" scaleX="0.9" scaleY="0.9">
+                     <image>
+                        <Image url="@../image/pack.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="Pack project to war file" />
+               </tooltip>
+            </Button>
                 <Separator orientation="VERTICAL" prefHeight="200.0" />
                 <Button contentDisplay="TOP" graphicTextGap="1.0" mnemonicParsing="false" onAction="#showDBManager" prefHeight="50.0" prefWidth="120.0" text="DB Manager">
                     <graphic>

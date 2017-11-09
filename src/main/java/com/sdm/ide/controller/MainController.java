@@ -9,13 +9,18 @@ import com.sdm.ide.model.ProjectTreeModel;
 import com.sdm.ide.model.ProjectTreeModel.Type;
 import com.sdm.ide.task.LoadProjectTask;
 import com.sdm.ide.task.NewProjectTask;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -377,5 +382,18 @@ public class MainController implements Initializable {
 
     @FXML
     private void packProject(ActionEvent event) {
+        try {
+            Process proc = Runtime.getRuntime().exec("mvn package");
+            InputStream istr = proc.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(istr));
+            try {
+                proc.waitFor();
+            } catch (InterruptedException e) {
+            }
+            br.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

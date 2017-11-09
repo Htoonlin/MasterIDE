@@ -1,52 +1,43 @@
 package com.sdm.ide.component;
 
-import javafx.scene.control.ProgressBar;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
-public class ProgressDialog {
+public class ProgressDialog extends Stage {
 
     private final ProgressBar mainProgressBar;
 
-    private final Label progressLabel;
-
-    private final Stage dialogStage;
-
-    public ProgressDialog() {
-        super();
+    public ProgressDialog(final Task<?> task, final boolean showLog) {
+        super(StageStyle.UTILITY);
         mainProgressBar = new ProgressBar();
-        mainProgressBar.setPrefWidth(250);
-        progressLabel = new Label("Please wait...");
-        progressLabel.setTextAlignment(TextAlignment.CENTER);
+        mainProgressBar.setPrefWidth(showLog ? 400 : 250);
+        this.mainProgressBar.progressProperty().bind(task.progressProperty());
 
         VBox rootPane = new VBox();
-        rootPane.setPadding(new Insets(20));
+        rootPane.setPadding(new Insets(10));
         rootPane.setFillWidth(true);
         rootPane.setAlignment(Pos.TOP_CENTER);
-        rootPane.setSpacing(20);
-        rootPane.getChildren().add(mainProgressBar);
-        rootPane.getChildren().add(progressLabel);
+        rootPane.setSpacing(10);
+        rootPane.getChildren().addAll(mainProgressBar);
 
-        Scene dialogScene = new Scene(rootPane, 320, 100, Color.WHITE);
+        Scene dialogScene = new Scene(rootPane);
 
-        this.dialogStage = new Stage();
-        this.dialogStage.initStyle(StageStyle.UTILITY);
-        this.dialogStage.setResizable(false);
-        this.dialogStage.initModality(Modality.APPLICATION_MODAL);
-        this.dialogStage.setScene(dialogScene);
-    }
+        setResizable(false);
+        initModality(Modality.APPLICATION_MODAL);
+        setScene(dialogScene);
 
-    public void start(final Task<?> task) {
-        task.setOnCancelled((event) -> close());
+        task.setOnCancelled(event -> close());
+
         task.setOnFailed((event) -> {
             close();
             if (task.getException() != null) {
@@ -55,28 +46,35 @@ public class ProgressDialog {
                 AlertDialog.showError("Task failed!");
             }
         });
-        this.mainProgressBar.progressProperty().bind(task.progressProperty());
-        this.progressLabel.textProperty().bind(task.messageProperty());
-        this.dialogStage.show();
+
+        if (showLog) {
+            TextArea logViewer = new TextArea();
+            logViewer.setPrefSize(400, 250);
+            logViewer.setEditable(false);
+            task.messageProperty().addListener(listener -> {
+                String message = task.getMessage();
+                if (!message.endsWith("\n")) {
+                    message += "\n";
+                }
+                logViewer.appendText(message);
+            });
+            rootPane.getChildren().add(logViewer);
+
+            Button btnClose = new Button("Close");
+            btnClose.setPrefWidth(400);
+            btnClose.setDisable(true);
+            btnClose.setOnAction(event -> close());
+            rootPane.getChildren().add(btnClose);
+        } else {
+            Label lblMessage = new Label();
+            lblMessage.setPrefWidth(250);
+            lblMessage.textProperty().bind(task.messageProperty());
+            rootPane.getChildren().add(lblMessage);
+        }
+
     }
 
     public ProgressBar getProgressBar() {
         return mainProgressBar;
-    }
-
-    public Label getLabel() {
-        return progressLabel;
-    }
-
-    public Stage getDialogStage() {
-        return dialogStage;
-    }
-
-    public void setTitle(String title) {
-        this.dialogStage.setTitle(title);
-    }
-
-    public void close() {
-        this.dialogStage.close();
     }
 }

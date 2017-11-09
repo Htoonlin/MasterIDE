@@ -60,6 +60,18 @@
                         <Tooltip text="Save Database Setting" />
                     </tooltip>
                 </Button>
+            <Button contentDisplay="GRAPHIC_ONLY" layoutX="15.0" layoutY="15.0" onAction="#autoMapped" prefHeight="48.0" prefWidth="50.0" text="Auto Mappping">
+               <graphic>
+                  <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/refresh.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="Auto Mapping" />
+               </tooltip>
+            </Button>
             </children>
         </HBox>
       <TitledPane collapsible="false" layoutX="14.0" layoutY="238.0" prefHeight="250.0" prefWidth="380.0" text="Mapped Entities" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="250.0">
