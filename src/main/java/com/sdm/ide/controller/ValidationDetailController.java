@@ -27,7 +27,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javax.rmi.CORBA.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import sun.text.normalizer.Utility;
@@ -85,13 +84,10 @@ public class ValidationDetailController implements Initializable {
         if (this.doneHandler != null) {
             NodeList<MemberValuePair> pairs = this.getInputValues();
             Name name = new Name(cboRules.getSelectionModel().getSelectedItem());
-            if (this.model == null) {
-                if (pairs.isEmpty()) {
-                    this.model = new MarkerAnnotationExpr(name);
-                } else {
-                    this.model = new NormalAnnotationExpr(name, pairs);
-                }
-
+            if (pairs.isEmpty()) {
+                this.model = new MarkerAnnotationExpr(name);
+            } else {
+                this.model = new NormalAnnotationExpr(name, pairs);
             }
             this.doneHandler.call(this.model);
         }

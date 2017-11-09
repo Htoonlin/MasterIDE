@@ -163,7 +163,7 @@ public class PropertyDetailController implements Initializable {
         }
     }
 
-    private void showValidation(AnnotationExpr model, final boolean isUpdate) {
+    private void showValidation(AnnotationExpr model) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ValidationDetail.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
@@ -180,11 +180,13 @@ public class PropertyDetailController implements Initializable {
             ValidationDetailController controller = loader.getController();
             controller.setModel(model);
             controller.onDone(result -> {
-                if (!isUpdate) {
-                    this.currentProperty.addValidation(result);
-                    lstAnnotations.getItems().add(result);
-                    lstAnnotations.refresh();
+                if(model != null){
+                    this.currentProperty.getValidations().remove(model);
+                    lstAnnotations.getItems().remove(model);
                 }
+                this.currentProperty.addValidation(result);
+                lstAnnotations.getItems().add(result);
+                lstAnnotations.refresh();
             });
 
         } catch (IOException e) {
@@ -281,7 +283,7 @@ public class PropertyDetailController implements Initializable {
 
     @FXML
     public void addRule(ActionEvent event) {
-        this.showValidation(null, false);
+        this.showValidation(null);
     }
 
     public void showDetailInputType(ActionEvent event) {
@@ -346,7 +348,7 @@ public class PropertyDetailController implements Initializable {
     private void selectedRule(MouseEvent event) {
         AnnotationExpr model = lstAnnotations.getSelectionModel().getSelectedItem();
         if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && model != null) {
-            this.showValidation(model, true);
+            this.showValidation(model);
         }
     }
 }

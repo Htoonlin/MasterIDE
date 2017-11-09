@@ -97,23 +97,18 @@ public class QueryEditorController implements Initializable {
 
     @FXML
     private TextField txtName;
-
+    
     private CodeArea codeArea;
 
     private Callback<Pair> saveHandler;
 
-    public void setQuery(String title, String code) {
+    public void setQuery(String title, String code) {        
         codeArea.replaceText(0, 0, code);
         txtName.setText(title);
     }
 
     public void onSave(Callback<Pair> handler) {
         this.saveHandler = handler;
-    }
-
-    private void close() {
-        Stage stage = (Stage) this.rootPane.getScene().getWindow();
-        stage.close();
     }
 
     @Override
@@ -126,7 +121,7 @@ public class QueryEditorController implements Initializable {
                 .subscribe(change -> {
                     codeArea.setStyleSpans(0, highlightNow(codeArea.getText()));
                 });
-
+        
         this.editorPane.getChildren().add(new VirtualizedScrollPane<>(codeArea));
     }
 

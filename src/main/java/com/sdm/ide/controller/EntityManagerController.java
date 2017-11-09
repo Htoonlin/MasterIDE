@@ -23,6 +23,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -195,6 +196,7 @@ public class EntityManagerController implements Initializable {
             dialogScene.getStylesheets().add(getClass().getResource("/fxml/syntax.css").toExternalForm());
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Code Editor");
+            dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/image/code.png")));
             dialogStage.initStyle(StageStyle.DECORATED);
             dialogStage.setResizable(true);
             dialogStage.setScene(dialogScene);

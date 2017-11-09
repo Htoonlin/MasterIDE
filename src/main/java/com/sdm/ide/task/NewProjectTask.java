@@ -29,12 +29,7 @@ public class NewProjectTask extends Task<File> {
     }
 
     private void showMessage(String message) {
-        try {
-            updateMessage(message);
-            Thread.sleep(10);
-        } catch (InterruptedException ex) {
-            updateMessage(message);
-        }
+        updateMessage(message);
     }
 
     @Override

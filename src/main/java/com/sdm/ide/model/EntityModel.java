@@ -166,6 +166,9 @@ public final class EntityModel implements Serializable {
     }
 
     public void removeFieldCode(String name) {
+        if(this.entityObject == null){
+            return;
+        }
         this.entityObject.getFieldByName(name).ifPresent(field -> {
             this.entityObject.remove(field);
         });

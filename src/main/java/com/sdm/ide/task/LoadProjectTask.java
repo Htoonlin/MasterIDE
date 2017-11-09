@@ -26,12 +26,7 @@ public class LoadProjectTask extends Task<TreeItem<ProjectTreeModel>> {
     }
 
     private void showMessage(String message) {
-        try {
-            updateMessage(message);
-            Thread.sleep(50);
-        } catch (InterruptedException ex) {
-            updateMessage(message);
-        }
+        updateMessage(message);
     }
 
     @Override
