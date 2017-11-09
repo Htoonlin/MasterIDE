@@ -87,10 +87,11 @@ public class EntityManagerController implements Initializable {
     public void loadEntity(File entityFile) {
         if (entityFile != null && entityFile.isFile() && entityFile.getName().endsWith(".java")) {
             this.moduleDir = entityFile.getParent().replaceAll("entity", "");
-            ProgressDialog dialog = new ProgressDialog();
+
             try {
                 ParseEntityTask task = new ParseEntityTask(entityFile);
-                dialog.start(task);
+                ProgressDialog dialog = new ProgressDialog(task, false);
+                dialog.show();
                 task.setOnSucceeded((event) -> {
                     currentEntity = task.getValue();
                     TableHelper.generateColumns(PropertyModel.class, propertyTable);
@@ -163,8 +164,8 @@ public class EntityManagerController implements Initializable {
             }
 
             WriteEntityTask task = new WriteEntityTask(currentEntity);
-            ProgressDialog dialog = new ProgressDialog();
-            dialog.start(task);
+            ProgressDialog dialog = new ProgressDialog(task, false);
+            dialog.show();
             task.setOnSucceeded(worker -> {
                 dialog.close();
                 if (task.getValue()) {
