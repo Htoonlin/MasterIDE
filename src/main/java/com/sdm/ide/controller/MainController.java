@@ -79,9 +79,10 @@ public class MainController implements Initializable {
         File resDir = new File(this.projectDirectory.getPath() + Constants.IDE.RESOURCE_DIR);
         if (javaDir.exists() && javaDir.isDirectory()
                 && resDir.exists() && resDir.isDirectory()) {
-            ProgressDialog dialog = new ProgressDialog();
+
             LoadProjectTask task = new LoadProjectTask(this.projectDirectory);
-            dialog.start(task);
+            ProgressDialog dialog = new ProgressDialog(task, false);
+            dialog.show();
             task.setOnSucceeded((event) -> {
                 projectTreeView.setRoot(task.getValue());
                 projectTreeView.refresh();
@@ -175,9 +176,10 @@ public class MainController implements Initializable {
             projectDirectory = choice;
             String savePath = ProjectManager.getFilePath(this.projectDirectory);
             if (isNew) {
-                ProgressDialog dialog = new ProgressDialog();
+
                 NewProjectTask task = new NewProjectTask(this.projectDirectory);
-                dialog.start(task);
+                ProgressDialog dialog = new ProgressDialog(task, false);
+                dialog.show();
                 task.setOnSucceeded((result) -> {
                     dialog.close();
                     File downloadFile = task.getValue();
@@ -371,5 +373,9 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+    }
+
+    @FXML
+    private void packProject(ActionEvent event) {
     }
 }

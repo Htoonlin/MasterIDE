@@ -91,4 +91,8 @@ public class HibernateSettingController implements Initializable {
         }
     }
 
+    @FXML
+    private void autoMapped(ActionEvent event) {
+    }
+
 }
