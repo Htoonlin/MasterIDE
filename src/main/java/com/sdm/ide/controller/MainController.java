@@ -394,7 +394,7 @@ public class MainController implements Initializable {
                 ClipboardContent content = new ClipboardContent();
                 content.putString(value);
                 clipboard.setContent(content);
-                AlertDialog.showInfo("Copied path : " + value);
+                AlertDialog.showInfo("Copied path of war file.");
             });
             dialog.start();
         }

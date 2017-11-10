@@ -34,7 +34,7 @@ public class PackProjectTask extends Task<String>{
         String command = mvnDir.getPath() + " " + Constants.IDE.MVN_PACK_COMMAND;
         Process proc = Runtime.getRuntime().exec(command, null, projectDir);
         InputStream istr = proc.getInputStream();
-        String result = projectDir.getPath() + File.pathSeparator + "target" + "master-api-2.2.war";
+        String result = projectDir.getPath() + File.pathSeparator + "target";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(istr))) {
             String message;
             while ((message = br.readLine()) != null) {
