@@ -9,17 +9,14 @@ import com.sdm.ide.model.ProjectTreeModel;
 import com.sdm.ide.model.ProjectTreeModel.Type;
 import com.sdm.ide.task.LoadProjectTask;
 import com.sdm.ide.task.NewProjectTask;
-import java.io.BufferedReader;
+import com.sdm.ide.task.PackProjectTask;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,10 +28,13 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class MainController implements Initializable {
@@ -85,16 +85,12 @@ public class MainController implements Initializable {
                 && resDir.exists() && resDir.isDirectory()) {
 
             LoadProjectTask task = new LoadProjectTask(this.projectDirectory);
-            ProgressDialog dialog = new ProgressDialog(task, false);
-            dialog.show();
-            task.setOnSucceeded((event) -> {
-                projectTreeView.setRoot(task.getValue());
+            ProgressDialog<TreeItem<ProjectTreeModel>> dialog = new ProgressDialog<>(task, false);
+            dialog.onSucceedHandler(value -> {
+                projectTreeView.setRoot(value);
                 projectTreeView.refresh();
-                dialog.close();
             });
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+            dialog.start();
             return true;
         } else {
             AlertDialog.showWarning("Invalid project directory.");
@@ -183,16 +179,13 @@ public class MainController implements Initializable {
             if (isNew) {
 
                 NewProjectTask task = new NewProjectTask(this.projectDirectory);
-                ProgressDialog dialog = new ProgressDialog(task, false);
-                dialog.show();
-                task.setOnSucceeded((result) -> {
-                    dialog.close();
-                    File downloadFile = task.getValue();
+                ProgressDialog<File> dialog = new ProgressDialog<>(task, false);
+                dialog.onSucceedHandler(value -> {
                     //Remove downloadFile 
                     Optional<ButtonType> respButton = AlertDialog.showQuestion("Do you want to remove downloaded zip file?");
                     if (respButton.isPresent() && respButton.get().equals(ButtonType.YES)) {
                         try {
-                            Files.delete(downloadFile.toPath());
+                            Files.delete(value.toPath());
                         } catch (IOException ex) {
                             AlertDialog.showException(ex);
                         }
@@ -202,9 +195,7 @@ public class MainController implements Initializable {
                         IDE.getPrefs().put(Constants.IDE.PREV_PROJECT_DIR, savePath);
                     }
                 });
-                Thread thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
+                dialog.start();
             } else if (this.loadProject()) {
                 IDE.getPrefs().put(Constants.IDE.PREV_PROJECT_DIR, savePath);
             }
@@ -380,44 +371,32 @@ public class MainController implements Initializable {
 
     }
 
+    private boolean isMaven(File mvnFile) {
+        return mvnFile.exists() && mvnFile.isFile() && mvnFile.getName().startsWith("mvn");
+    }
+
     @FXML
     private void packProject(ActionEvent event) {
-        Task<Void> packTask = new Task() {
-            @Override
-            protected Void call() throws Exception {
-                String os = System.getProperty("os.name", "windows");
-                String[] cmd;
-                String setDir = "cd " + projectDirectory.getPath();
-                if(os.equalsIgnoreCase("windows")){
-                    cmd = {"cmd.exe /c", setDir, "mvn package"};
-                }else{
-                    cmd = {setDir, "mvn package"};
-                }
-                
-                Process proc = Runtime.getRuntime().exec(cmd);
-                InputStream istr = proc.getInputStream();
+        final String mvnDirectory = IDE.getPrefs().get(Constants.IDE.MVN_DIR, "");
+        File mvnFile = new File(mvnDirectory);
+        if (!isMaven(mvnFile)) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(projectDirectory);
+            mvnFile = fileChooser.showOpenDialog(primaryStage);
+            IDE.getPrefs().put(Constants.IDE.MVN_DIR, mvnFile.getPath());
+        }
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(istr));
-                String message;
-                while ((message = br.readLine()) != null) {
-                    updateMessage(message);
-                }
-
-                try {
-                    proc.waitFor();
-                } catch (InterruptedException e) {
-                }
-                br.close();
-                return null;
-            }
-        };
-
-        ProgressDialog dialog = new ProgressDialog(packTask, true);
-        dialog.show();
-
-        Thread thread = new Thread(packTask);
-        thread.setDaemon(true);
-        thread.start();
-
+        if (isMaven(mvnFile)) {
+            PackProjectTask task = new PackProjectTask(projectDirectory, mvnFile);
+            ProgressDialog<String> dialog = new ProgressDialog<>(task, true);
+            dialog.onSucceedHandler(value -> {
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                ClipboardContent content = new ClipboardContent();
+                content.putString(value);
+                clipboard.setContent(content);
+                AlertDialog.showInfo("Copied path : " + value);
+            });
+            dialog.start();
+        }
     }
 }

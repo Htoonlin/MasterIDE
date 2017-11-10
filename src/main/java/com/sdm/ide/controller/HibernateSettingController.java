@@ -116,7 +116,7 @@ public class HibernateSettingController implements Initializable {
     private void mapAllEntities(TreeItem<ProjectTreeModel> item) {
         ProjectTreeModel model = item.getValue();
         if (model.getType() == ProjectTreeModel.Type.ENTITY) {
-            String javaClass = ProjectManager.getClassNameWithPackage(model.getFile().getPath());
+            String javaClass = ProjectManager.getClassNameWithPackage(model.getFile());
             HibernateManager.getInstance().addEntity(javaClass);
         }
 

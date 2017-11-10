@@ -19,8 +19,9 @@ public interface Constants {
         String RESOURCE_DIR = ("/src/main/resources/").replace('/', File.separatorChar);
         String WEB_DIR = ("/src/main/webapp/").replace('/', File.separatorChar);
         String[] MODULE_DIRS = {"dao", "entity", "resource"};
-
         String PREV_PROJECT_DIR = "com.sdm.ide.PREV_DIR";
+        String MVN_DIR = "com.sdm.ide.MVN_DIR";
+        String MVN_PACK_COMMAND = "clean package";
     }
 
     /**

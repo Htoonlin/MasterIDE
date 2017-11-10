@@ -13,12 +13,23 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class ProgressDialog extends Stage {
+public class ProgressDialog<T> extends Stage {
 
     private final ProgressBar mainProgressBar;
 
-    public ProgressDialog(final Task<?> task, final boolean showLog) {
+    private Callback<T> succeedHandler;
+    
+    private final Task<T> task;
+
+    public void onSucceedHandler(Callback<T> handler) {
+        this.succeedHandler = handler;
+    }
+
+    public ProgressDialog(Task<T> task, final boolean showLog) {
         super(StageStyle.UTILITY);
+        
+        this.task = task;
+        
         mainProgressBar = new ProgressBar();
         mainProgressBar.setPrefWidth(showLog ? 400 : 250);
         this.mainProgressBar.progressProperty().bind(task.progressProperty());
@@ -65,16 +76,36 @@ public class ProgressDialog extends Stage {
             btnClose.setDisable(true);
             btnClose.setOnAction(event -> close());
             rootPane.getChildren().add(btnClose);
+            task.setOnSucceeded(event -> { 
+                mainProgressBar.setVisible(false);
+                btnClose.setDisable(false);
+                if (succeedHandler != null) {
+                    succeedHandler.call(task.getValue());
+                }
+            });
         } else {
             Label lblMessage = new Label();
             lblMessage.setPrefWidth(250);
             lblMessage.textProperty().bind(task.messageProperty());
             rootPane.getChildren().add(lblMessage);
+            task.setOnSucceeded(event -> {
+                close();
+                if (succeedHandler != null) {
+                    succeedHandler.call(task.getValue());
+                }
+            });
         }
-
     }
 
     public ProgressBar getProgressBar() {
         return mainProgressBar;
     }
+    
+    public void start() {
+        show();
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
 }

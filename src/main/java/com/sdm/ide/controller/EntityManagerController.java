@@ -91,10 +91,9 @@ public class EntityManagerController implements Initializable {
 
             try {
                 ParseEntityTask task = new ParseEntityTask(entityFile);
-                ProgressDialog dialog = new ProgressDialog(task, false);
-                dialog.show();
-                task.setOnSucceeded((event) -> {
-                    currentEntity = task.getValue();
+                ProgressDialog<EntityModel> dialog = new ProgressDialog(task, false);
+                dialog.onSucceedHandler(value -> {
+                    currentEntity = value;
                     TableHelper.generateColumns(PropertyModel.class, propertyTable);
                     propertyTable.setItems(FXCollections.observableArrayList(currentEntity.getProperties()));
                     propertyTable.getColumns().forEach(col -> {
@@ -103,14 +102,9 @@ public class EntityManagerController implements Initializable {
                         }
                     });
                     propertyTable.refresh();
-
-                    this.showDetail(null);
-                    dialog.close();
+                    this.showDetail(null);                    
                 });
-
-                Thread thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
+                dialog.start();
             } catch (Exception ex) {
                 AlertDialog.showException(ex);
             }
@@ -165,20 +159,15 @@ public class EntityManagerController implements Initializable {
             }
 
             WriteEntityTask task = new WriteEntityTask(currentEntity);
-            ProgressDialog dialog = new ProgressDialog(task, false);
-            dialog.show();
-            task.setOnSucceeded(worker -> {
-                dialog.close();
-                if (task.getValue()) {
+            ProgressDialog<Boolean> dialog = new ProgressDialog<>(task, false);            
+            dialog.onSucceedHandler(value -> {                
+                if (value) {
                     this.loadEntity(this.currentEntity.getFile());
                 } else {
                     AlertDialog.showWarning("Something wrong in code generation process.");
                 }
             });
-
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+            dialog.start();
         } catch (Exception ex) {
             AlertDialog.showException(ex);
         }

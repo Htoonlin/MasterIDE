@@ -30,8 +30,9 @@ public class ProjectManager {
         return file.getPath().replace(File.separatorChar, '/');
     }
 
-    public static String getClassNameWithPackage(String filePath) {
-        return filePath.replaceAll(".*/java/", "").replaceAll("\\.java", "").replace(File.separatorChar, '.');
+    public static String getClassNameWithPackage(File file) {
+        String filePath = getFilePath(file);
+        return filePath.replaceAll("(.*/java/)|(\\.java)", "").replace('/', '.');
     }
 
     public static void createModule(File moduleDir) {
