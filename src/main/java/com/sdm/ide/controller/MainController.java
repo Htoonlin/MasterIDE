@@ -381,6 +381,7 @@ public class MainController implements Initializable {
         File mvnFile = new File(mvnDirectory);
         if (!isMaven(mvnFile)) {
             FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choose mvn file to pack project.");
             fileChooser.setInitialDirectory(projectDirectory);
             mvnFile = fileChooser.showOpenDialog(primaryStage);
             IDE.getPrefs().put(Constants.IDE.MVN_DIR, mvnFile.getPath());
