@@ -19,8 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -92,7 +91,6 @@ public class MainController implements Initializable {
                 projectTreeView.setRoot(task.getValue());
                 projectTreeView.refresh();
                 dialog.close();
-                //this.loadHibernate();
             });
             Thread thread = new Thread(task);
             thread.setDaemon(true);
@@ -108,6 +106,8 @@ public class MainController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/HibernateSetting.fxml"));
             AnchorPane root = (AnchorPane) loader.load();
+            HibernateSettingController controller = loader.getController();
+            controller.setProjectTree(projectTreeView);
             this.loadNode(root);
         } catch (IOException ex) {
             AlertDialog.showException(ex);
@@ -382,18 +382,42 @@ public class MainController implements Initializable {
 
     @FXML
     private void packProject(ActionEvent event) {
-        try {
-            Process proc = Runtime.getRuntime().exec("mvn package");
-            InputStream istr = proc.getInputStream();
+        Task<Void> packTask = new Task() {
+            @Override
+            protected Void call() throws Exception {
+                String os = System.getProperty("os.name", "windows");
+                String[] cmd;
+                String setDir = "cd " + projectDirectory.getPath();
+                if(os.equalsIgnoreCase("windows")){
+                    cmd = {"cmd.exe /c", setDir, "mvn package"};
+                }else{
+                    cmd = {setDir, "mvn package"};
+                }
+                
+                Process proc = Runtime.getRuntime().exec(cmd);
+                InputStream istr = proc.getInputStream();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(istr));
-            try {
-                proc.waitFor();
-            } catch (InterruptedException e) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(istr));
+                String message;
+                while ((message = br.readLine()) != null) {
+                    updateMessage(message);
+                }
+
+                try {
+                    proc.waitFor();
+                } catch (InterruptedException e) {
+                }
+                br.close();
+                return null;
             }
-            br.close();
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        };
+
+        ProgressDialog dialog = new ProgressDialog(packTask, true);
+        dialog.show();
+
+        Thread thread = new Thread(packTask);
+        thread.setDaemon(true);
+        thread.start();
+
     }
 }
