@@ -122,6 +122,9 @@ public class HibernateManager {
             Node mapping = mappings.item(i);
             NamedNodeMap attrs = mapping.getAttributes();
             Node entity = attrs.getNamedItem(ATTR_CLASS);
+            if(entity.getTextContent().startsWith("com.sdm.core")){
+                continue;
+            }
             entities.add(entity.getTextContent());
         }
         return entities;
@@ -131,6 +134,11 @@ public class HibernateManager {
         NodeList mappings = doc.getElementsByTagName(ELEMENT_MAPPING);
         for (int i = 0; i < mappings.getLength(); i++) {
             Node mapping = mappings.item(i);
+            NamedNodeMap attrs = mapping.getAttributes();
+            Node entity = attrs.getNamedItem(ATTR_CLASS);
+            if(entity.getTextContent().startsWith("com.sdm.core")){
+                continue;
+            }
             mapping.getParentNode().removeChild(mapping);
         }
     }
