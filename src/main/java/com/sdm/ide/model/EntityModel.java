@@ -71,7 +71,7 @@ public final class EntityModel implements Serializable {
                 "org.hibernate.annotations.Formula",
                 "org.hibernate.annotations.DynamicUpdate",
                 "com.sdm.core.hibernate.entity.DefaultEntity",
-                "com.sdm.core.response.LinkModel",
+                "com.sdm.core.response.model.LinkModel",
                 "com.sdm.core.ui.UIInputType",
                 "com.sdm.core.ui.UIStructure"
         ));
@@ -92,6 +92,7 @@ public final class EntityModel implements Serializable {
             this.setTableName("tbl_" + dbModule.replaceAll("\\.", "_"));
             this.setEntityName(basePackage);
             String resourceImport = this.getModuleName() + ".resource." + this.getName().replaceAll("Entity", "Resource");
+            this.addImport(resourceImport);
         }
     }
 
