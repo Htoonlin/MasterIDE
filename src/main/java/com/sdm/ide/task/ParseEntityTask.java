@@ -49,6 +49,7 @@ public class ParseEntityTask extends Task<EntityModel> {
     }
 
     private void showMessage(String message) {
+        System.out.println(message);
         updateMessage(message);
     }
 
@@ -222,14 +223,13 @@ public class ParseEntityTask extends Task<EntityModel> {
                 name = pair.getValue().toString();
             } else if (pair.getNameAsString().equals("query")) {
                 query = pair.getValue().toString();
+                if (query.length() > 2) {
+                    query = query.substring(1, query.length() - 1);
+                }
             }
         }
 
-        if (name.length() > 2 && query.length() > 2) {
-            this.showMessage("Loading query " + name);
-            name = name.substring(this.entity.getEntityName().length() + 2, name.length() - 1);
-            this.entity.addNamedQuery(name, query.substring(1, query.length() - 1));
-        }
+        this.entity.addNamedQuery(name, query);
     }
 
     private void loadSearchFields(String formula) {

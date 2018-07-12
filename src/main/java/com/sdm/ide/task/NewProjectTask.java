@@ -29,6 +29,7 @@ public class NewProjectTask extends Task<File> {
     }
 
     private void showMessage(String message) {
+        System.out.println(message);
         updateMessage(message);
     }
 

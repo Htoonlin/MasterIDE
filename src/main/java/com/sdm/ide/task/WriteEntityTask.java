@@ -18,7 +18,6 @@ import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.description.JavadocDescription;
 import com.sdm.core.Globalizer;
@@ -158,10 +157,6 @@ public class WriteEntityTask extends Task<Boolean> {
         ArrayInitializerExpr queriesExpr = new ArrayInitializerExpr();
         for (String name : this.entity.getNamedQueries().keySet()) {
             String query = this.entity.getNamedQuery(name);
-
-            if (!name.startsWith(this.entity.getEntityName())) {
-                name = this.entity.getEntityName() + "." + name;
-            }
 
             NormalAnnotationExpr namedQuery = new NormalAnnotationExpr();
             namedQuery.setName("NamedQuery");
@@ -448,34 +443,15 @@ public class WriteEntityTask extends Task<Boolean> {
         this.showMessage("Creating new resource file.");
         CompilationUnit cu = new CompilationUnit();
         cu.setPackageDeclaration(entity.getModuleName() + ".resource");
-        cu.addImport("javax.annotation.PostConstruct");
         cu.addImport("javax.ws.rs.Path");
-        cu.addImport("org.apache.log4j.Logger");
         cu.addImport("com.sdm.core.resource.RestResource");
-        cu.addImport("com.sdm.core.hibernate.dao.RestDAO");
-        cu.addImport(entity.getModuleName() + ".dao." + entity.getBaseName() + "DAO");
         cu.addImport(entity.getModuleName() + ".entity." + entity.getName());
 
         ClassOrInterfaceDeclaration resourceObject = cu.addClass(resource, Modifier.PUBLIC);
         resourceObject.addExtendedType("RestResource<" + entity.getName() + ", " + entity.getPrimaryType() + ">");
 
-        FieldDeclaration loggerField = resourceObject.addField("Logger", "LOG", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-        loggerField.getVariable(0).setInitializer("Logger.getLogger(" + entity.getBaseName() + "Resource.class.getName())");
-
-        MethodDeclaration getLogger = resourceObject.addMethod("getLogger", Modifier.PROTECTED);
-        getLogger.addMarkerAnnotation("Override");
-        getLogger.setType("Logger");
-        getLogger.createBody().addStatement("return " + entity.getBaseName() + "Resource.LOG;");
-
-        resourceObject.addField(entity.getBaseName() + "DAO", "mainDAO", Modifier.PRIVATE);
-        MethodDeclaration init = resourceObject.addMethod("init", Modifier.PRIVATE);
-        init.addMarkerAnnotation("PostConstruct");
-        init.createBody().addStatement("mainDAO = new " + entity.getBaseName() + "DAO(getUserId());");
-
-        MethodDeclaration getDAO = resourceObject.addMethod("getDAO", Modifier.PROTECTED);
-        getDAO.addMarkerAnnotation("Override");
-        getDAO.setType("RestDAO");
-        getDAO.createBody().addStatement("return this.mainDAO;");
+        ConstructorDeclaration constructor = resourceObject.addConstructor(Modifier.PUBLIC);
+        constructor.createBody().addStatement(new MethodCallExpr(null, "super"));
 
         this.showMessage("Successfully created " + resource + ".java file.");
         return cu;
@@ -522,25 +498,26 @@ public class WriteEntityTask extends Task<Boolean> {
             cu.setPackageDeclaration(entity.getModuleName() + ".dao");
             cu.addImport("org.hibernate.Session");
             cu.addImport("com.sdm.core.hibernate.dao.RestDAO");
+            cu.addImport("com.sdm.core.hibernate.audit.IUserListener");
             cu.addImport(entity.getModuleName() + ".entity." + entity.getName());
 
             ClassOrInterfaceDeclaration daoObject = cu.addClass(dao, Modifier.PUBLIC);
             daoObject.addExtendedType("RestDAO");
 
             ConstructorDeclaration constUser = daoObject.addConstructor(Modifier.PUBLIC);
-            constUser.addParameter(PrimitiveType.intType(), "userId");
+            constUser.addParameter("IUserListener", "listener");
             MethodCallExpr call = new MethodCallExpr(null, "super");
             call.addArgument(entity.getName() + ".class.getName()");
-            call.addArgument("userId");
+            call.addArgument("listener");
             constUser.createBody().addStatement(call);
 
             ConstructorDeclaration constUserWithSession = daoObject.addConstructor(Modifier.PUBLIC);
             constUserWithSession.addParameter("Session", "session");
-            constUserWithSession.addParameter(PrimitiveType.intType(), "userId");
+            constUserWithSession.addParameter("IUserListener", "listener");
             call = new MethodCallExpr(null, "super");
             call.addArgument("session");
             call.addArgument(entity.getName() + ".class.getName()");
-            call.addArgument("userId");
+            call.addArgument("listener");
             constUserWithSession.createBody().addStatement(call);
 
             Files.write(daoFile.toPath(), cu.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
@@ -605,13 +582,16 @@ public class WriteEntityTask extends Task<Boolean> {
         Files.write(entity.getFile().toPath(), code.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
 
         //Write DAO File
-        this.writeDAO();
-
+        //this.writeDAO();
         //Write Resource File
-        this.writeResource();
+        if (entity.getResourcePath().length() > 0) {
+            this.writeResource();
+        }
 
         //Write Hibernate mapping
-        this.writeHibernate();
+        if (entity.isMappedWithDB()) {
+            this.writeHibernate();
+        }
         return true;
     }
 

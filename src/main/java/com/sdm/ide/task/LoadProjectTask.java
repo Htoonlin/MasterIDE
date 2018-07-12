@@ -26,6 +26,7 @@ public class LoadProjectTask extends Task<TreeItem<ProjectTreeModel>> {
     }
 
     private void showMessage(String message) {
+        System.out.println(message);
         updateMessage(message);
     }
 
